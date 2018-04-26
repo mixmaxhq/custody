@@ -1,0 +1,32 @@
+{
+  "name": "custody",
+  "version": "0.0.1",
+  "description": "A developer-oriented frontend for Supervisor",
+  "main": "dist/index.js",
+  "repository": "https://github.com/mixmaxhq/custody",
+  "author": "Jeff Wear <jeff@mixmax.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node dist/index.js",
+    "build": "[ \"$WATCH\" == 'true' ] && rollup -cw || rollup -c",
+    "watch": "WATCH=true yarn build"
+  },
+  "dependencies": {
+    "ink": "^0.4.1",
+    "ink-table": "^0.0.3",
+    "promise-callbacks": "^3.1.0",
+    "prop-types": "^15.6.1",
+    "supervisord": "^0.1.0",
+    "underscore": "^1.9.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.2",
+    "babel-plugin-transform-react-jsx": "^6.24.1",
+    "babel-preset-env": "^1.6.1",
+    "eslint": ">=4.14.0",
+    "eslint-config-mixmax": "^1.0.0",
+    "rollup": "^0.58.2",
+    "rollup-plugin-babel": "^3.0.4",
+    "rollup-plugin-node-resolve": "^3.3.0"
+  }
+}
