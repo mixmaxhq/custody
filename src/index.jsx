@@ -6,7 +6,17 @@ import Console from './Console';
 
 const client = promisify.all(supervisord.connect('http://localhost:9001'));
 
-// `Table` doesn't unmount synchronously or something, so if we let `ink` automatically unmount
-// on exit we'll get an error "Cannot read property 'componentWillUnmount' of null".
-// TODO(jeff): Figure out how to suppress this.
-render(<Console client={client}/>);
+const unmount = render(<Console client={client}/>);
+
+// HACK(jeff): Suppress error when unmounting "Cannot read property 'componentWillUnmount' of null".
+// The keypress listener we use here is copied from that inside `ink`.
+process.stdin.removeAllListeners('keypress');
+process.stdin.on('keypress', (ch, key) => {
+  if (key.name === 'escape' || (key.ctrl && key.name === 'c')) {
+    try {
+      unmount();
+    } catch (e) {
+      // See comment above.
+    }
+  }
+});
