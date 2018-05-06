@@ -12,10 +12,11 @@
     "watch": "WATCH=true yarn build"
   },
   "dependencies": {
-    "ink": "^0.4.1",
-    "ink-table": "^0.0.3",
+    "blessed": "^0.1.81",
     "promise-callbacks": "^3.1.0",
     "prop-types": "^15.6.1",
+    "react": "^16.3.2",
+    "react-blessed": "^0.2.1",
     "supervisord": "^0.1.0",
     "underscore": "^1.9.0"
   },

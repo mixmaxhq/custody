@@ -21,7 +21,7 @@ export default {
         }]
       ],
       plugins: [
-        ['transform-react-jsx', { pragma: 'h' }],
+        ['transform-react-jsx'],
       ],
       exclude: [ 'node_modules/**' ]
     })

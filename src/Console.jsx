@@ -1,15 +1,14 @@
-/** @jsx h */
 import _ from 'underscore';
-import { Component, h, Text } from 'ink';
 import PropTypes from 'prop-types';
-import Table from 'ink-table';
+import React, {Component} from 'react';
+import screen from './screen';
 
 export default class Console extends Component {
-  constructor(props, context) {
-    super(props, context);
+  constructor(props) {
+    super(props);
 
     this.state = {
-      status: []
+      processes: []
     };
   }
 
@@ -24,16 +23,29 @@ export default class Console extends Component {
 
   updateStatus() {
     this.props.client.getAllProcessInfo()
-      .then((processInfo) => this.setState({ status: status(processInfo) }))
+      .then((processInfo) => this.setState({ processes: processStatus(processInfo) }))
       .catch((err) => {
         console.error(err);
         process.exit(1);
       });
   }
 
-  render(props, state) {
+  render() {
     return (
-      <Table data={state.status} cell={StatusCell}/>
+      <listtable
+        mouse
+        keys
+        focused
+        align='left'
+        style={{
+          item: { fg: 'black' },
+          selected: { fg: 'white', bg: 'black' },
+          header: { bold: true }
+        }}
+        tags // Enables cell content to contain color tags.
+        data={tableData(this.state.processes)}
+        onSelect={ (...args) => screen.debug('selected', args[1]) }
+      />
     );
   }
 }
@@ -42,7 +54,7 @@ Console.propTypes = {
   client: PropTypes.object.isRequired
 };
 
-function status(processInfo) {
+function processStatus(processInfo) {
   return _.map(processInfo, (proc) => {
     // Not sure how to sort columns using `ink-table`. I think data keys are enumerated in order of
     // addition.
@@ -54,18 +66,24 @@ function status(processInfo) {
   });
 }
 
-function StatusCell({ children }) {
-  // HACK(jeff): Detect that this is the `state` column by examining the case of the text.
-  // TODO(jeff): Use different cells per column.
-  const value = children[0];
-  const isState = value.toUpperCase() === value;
-  if (isState && (value.trim() !== 'RUNNING')) {
-    return <Text red>{children}</Text>;
-  } else {
-    return <Text>{children}</Text>;
-  }
+function tableData(processes) {
+  if (_.isEmpty(processes)) return processes;
+
+  const headers = Object.keys(processes[0]);
+  return [
+    headers,
+    ...processes.map((proc) => {
+      return headers.map((header) => cellData(header, proc[header]));
+    })
+  ];
 }
 
-StatusCell.propTypes = {
-  children: PropTypes.any.isRequired
-};
+function cellData(header, value) {
+  switch (header) {
+    case 'state':
+      if (value !== 'RUNNING') {
+        value = `{red-fg}${value}{/}`;
+      }
+  }
+  return value;
+}
