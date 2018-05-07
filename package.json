@@ -12,15 +12,17 @@
     "watch": "WATCH=true yarn build"
   },
   "dependencies": {
-    "ink": "^0.4.1",
-    "ink-table": "^0.0.3",
+    "blessed": "^0.1.81",
     "promise-callbacks": "^3.1.0",
     "prop-types": "^15.6.1",
+    "react": "^16.3.2",
+    "react-blessed": "^0.2.1",
     "supervisord": "^0.1.0",
     "underscore": "^1.9.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.2",
+    "babel-plugin-transform-function-bind": "^6.22.0",
     "babel-plugin-transform-react-jsx": "^6.24.1",
     "babel-preset-env": "^1.6.1",
     "eslint": ">=4.14.0",
