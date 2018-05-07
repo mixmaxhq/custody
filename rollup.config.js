@@ -21,7 +21,8 @@ export default {
         }]
       ],
       plugins: [
-        ['transform-react-jsx'],
+        'transform-react-jsx',
+        'transform-function-bind'
       ],
       exclude: [ 'node_modules/**' ]
     })
