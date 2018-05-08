@@ -1,15 +1,16 @@
 import _ from 'underscore';
+import Log from './Log';
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
 import ProcessTable from './ProcessTable';
-import screen from './screen';
 
 export default class Console extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      processes: []
+      processes: [],
+      selectedProcess: null
     };
   }
 
@@ -23,6 +24,9 @@ export default class Console extends Component {
   }
 
   updateStatus() {
+    // TODO(jeff): Deselect the process if, somehow, it was not found in the process info after
+    // updating. Also note that `this.state.selectedProcess` doesn't change after updating, which
+    // is important, because (I think) that's what keeps us from re-rendering `Log`.
     this.props.client.getAllProcessInfo()
       .then((processInfo) => this.setState({ processes: processStatus(processInfo) }))
       .catch((err) => {
@@ -32,14 +36,21 @@ export default class Console extends Component {
   }
 
   onSelect(...args) {
+    // The table is 1-indexed.
     const index = _.last(args);
-    screen.debug('selected', index);
+    this.setState({ selectedProcess: this.state.processes[index - 1] });
+  }
+
+  onDeselect() {
+    this.setState({ selectedProcess: null });
   }
 
   render() {
-    return (
-      <ProcessTable processes={this.state.processes} onSelect={::this.onSelect}/>
-    );
+    if (this.state.selectedProcess) {
+      return <Log process={this.state.selectedProcess} onClose={::this.onDeselect}/>;
+    } else {
+      return <ProcessTable processes={this.state.processes} onSelect={::this.onSelect}/>;
+    }
   }
 }
 
@@ -54,7 +65,8 @@ function processStatus(processInfo) {
     return {
       name: (proc.group === proc.name) ? proc.name : `${proc.group}:${proc.name}`,
       state: proc.statename,
-      description: proc.description
+      description: proc.description,
+      logfile: proc.logfile
     };
   });
 }

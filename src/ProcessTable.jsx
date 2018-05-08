@@ -5,7 +5,7 @@ import React, {Component} from 'react';
 function tableData(processes) {
   if (_.isEmpty(processes)) return processes;
 
-  const headers = Object.keys(processes[0]);
+  const headers = _.without(_.keys(processes[0]), 'logfile');
   return [
     headers,
     ...processes.map((proc) => {
@@ -58,7 +58,7 @@ export default class ProcessTable extends Component {
       // When using the mouse to scroll, blessed lets the scroll go off the top of the table, as
       // represented by the headers (at position 0) being selected (even though they don't show as
       // selected). Prevent this.
-      this.table.select(1);
+      this.table && this.table.select(1);
     }
   }
 

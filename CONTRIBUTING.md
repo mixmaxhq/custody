@@ -1,4 +1,4 @@
-You can run `yarn watch` to automatically rebuild the project when the files change. You'll have to
+You can run `npm run watch` to automatically rebuild the project when the files change. You'll have to
 manually restart the app though (maybe we can livereload it somehow? #13).
 
 Don't use `console.log` since it'll overwrite the app's output. Instead, `import screen` and do
