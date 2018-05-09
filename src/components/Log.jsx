@@ -39,10 +39,11 @@ export default class Log extends Component {
         this.log.add(line);
       } else {
         logs.push(line);
+        if (logs.length > SCROLLBACK) logs.shift();
       }
     });
     this.tail.on('historicalDataEnd', () => {
-      logs.slice(-SCROLLBACK).forEach((line) => this.log.add(line));
+      logs.forEach((line) => this.log.add(line));
       logs = [];
       initialDataFlushed = true;
     });
