@@ -88,7 +88,7 @@ export default class ProcessTable extends Component {
     // `ch` will only be defined if the key was a single character input vs. e.g. the down arrow.
     // For 'backspace' and 'enter'/'return', `ch` is some kind of control character though, annoyingly.
     // Also on OS X the enter key emits *two* keypresses in a row, one for 'enter' _and_ 'return'!
-    if (key.full === 'backspace') {
+    if (key.name === 'backspace') {
       this.setState((prevState, props) => {
         const newSearch = prevState.search.slice(0, -1);
         if (!newSearch) {
@@ -103,7 +103,7 @@ export default class ProcessTable extends Component {
       screen.grabKeys = false;
       this.setState({ search: '', processes: this.props.processes });
 
-    } else if (ch && !_.contains(['enter', 'return'], key.full)) {
+    } else if (ch && !_.contains(['enter', 'return'], key.name)) {
       this.setState((prevState, props) => {
         const newSearch = prevState.search + ch;
         // Grab Esc to clear the search, instead of quitting the program.
