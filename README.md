@@ -18,17 +18,27 @@ individual services' logs with _minimum keystrokes_.
 
 ## Installation
 
-This project should eventually expose a binary to be installed globally.
-
-For now, clone this somewhere, then run `npm install && npm run build`.
+```sh
+npm install -g custody
+```
 
 ## Usage
 
 Make sure that Supervisor is running on port 9001 (Mixmax engineers: this is your default).
 
-This project should eventually expose a binary to invoke.
+Then run `custody`.
 
-For now, build the project using `npm run build`, then run `npm run start`.
+This will show a view like `supervisorctl status`--except real-time and color-coded:
+
+![](docs/status.png)
+
+Scroll through the list using your arrow keys or the mouse--or type to filter to a service of interest:
+
+![](docs/filter.png)
+
+Hit enter or double-click on a service to open its logs:
+
+![](docs/logs.png)
 
 ## Contributing / Roadmap
 
