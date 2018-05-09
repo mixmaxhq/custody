@@ -1,6 +1,6 @@
 {
   "name": "custody",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A developer-oriented frontend for Supervisor",
   "bin": "bin/custody.js",
   "main": "dist/index.js",
