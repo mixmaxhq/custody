@@ -12,8 +12,8 @@ function filterProcesses(search, processes) {
     extract: (process) => process.name
   }).map((result) => {
     const process = _.clone(result.original);
-    // Overwrite the process name with the tagged version.
-    process.name = result.string;
+    // Record the tagged name.
+    process.displayName = result.string;
     return process;
   });
 }
@@ -21,11 +21,13 @@ function filterProcesses(search, processes) {
 function tableData(processes) {
   if (_.isEmpty(processes)) return processes;
 
-  const headers = _.without(_.keys(processes[0]), 'logfile');
+  const headers = _.without(_.keys(processes[0]), 'displayName', 'logfile');
   return [
     headers,
     ...processes.map((proc) => {
-      return headers.map((header) => cellData(header, proc[header]));
+      return headers.map((header) => {
+        return cellData(header, proc[header === 'name' ? 'displayName' : header]);
+      });
     })
   ];
 }
