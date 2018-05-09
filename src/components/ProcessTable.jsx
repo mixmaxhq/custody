@@ -21,12 +21,29 @@ function filterProcesses(search, processes) {
 function tableData(processes) {
   if (_.isEmpty(processes)) return processes;
 
-  const headers = _.without(_.keys(processes[0]), 'displayName', 'logfile');
+  const headers = ['name', 'state', 'description'];
   return [
     headers,
     ...processes.map((proc) => {
       return headers.map((header) => {
-        return cellData(header, proc[header === 'name' ? 'displayName' : header]);
+        let cellValue;
+        switch (header) {
+          case 'name':
+            cellValue = proc['displayName'];
+            break;
+          // For state and description, prefer information reported by the child process if available.
+          case 'state':
+            cellValue = proc['childState'] || proc['state'];
+            break;
+          case 'description':
+            cellValue = proc['childDescription'] || proc['description'];
+            break;
+          default:
+            cellValue = proc[header];
+            break;
+        }
+
+        return cellData(header, cellValue);
       });
     })
   ];

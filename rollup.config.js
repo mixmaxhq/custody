@@ -22,7 +22,11 @@ export default {
       ],
       plugins: [
         'transform-react-jsx',
-        'transform-function-bind'
+        'transform-function-bind',
+        // Don't need to transform object rest spread since Node 8.9.3 supports it, but for some
+        // reason we do need to teach Babel to parse it. https://github.com/babel/babel/issues/6970
+        // isn't quite the error seen, but similar.
+        'syntax-object-rest-spread'
       ],
       exclude: [ 'node_modules/**' ]
     })
