@@ -35,10 +35,8 @@ export default class Console extends Component {
       });
   }
 
-  onSelect(...args) {
-    // The table is 1-indexed.
-    const index = _.last(args);
-    this.setState({ selectedProcess: this.state.processes[index - 1] });
+  onSelect(process) {
+    this.setState({ selectedProcess: process });
   }
 
   onDeselect() {
