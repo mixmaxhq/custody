@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
-import screen from '../screen';
+import screen from '../../screen';
 import {Tail} from 'tail';
 
 // It might be nice to render the entire log file. However this is probably (?) unnecessary and
@@ -8,7 +8,7 @@ import {Tail} from 'tail';
 // try to load it all into the `log` component, can take several seconds to render.
 const SCROLLBACK = 100 /* lines */;
 
-export default class Log extends Component {
+export default class ProcessLog extends Component {
   componentDidMount() {
     // Grab Esc to use in navigation, instead of quitting the program.
     screen.grabKeys = true;
@@ -64,6 +64,7 @@ export default class Log extends Component {
       // Unfortunately react-blessed@0.2.1 doesn't support `React.createRef`.
       <log
         ref={(log) => this.log = log}
+        {...this.props.layout}
         input // Enables 'keypress'.
         mouse // This and `keys` enable the user to navigate the logs.
         keys
@@ -80,7 +81,8 @@ export default class Log extends Component {
   }
 }
 
-Log.propTypes = {
+ProcessLog.propTypes = {
   process: PropTypes.object.isRequired,
-  onClose: PropTypes.func
+  onClose: PropTypes.func,
+  layout: PropTypes.object
 };

@@ -1,7 +1,7 @@
 import _ from 'underscore';
-import Log from './Log';
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
+import ProcessDetails from './processDetails';
 import ProcessTable from './ProcessTable';
 
 export default class Console extends Component {
@@ -24,11 +24,16 @@ export default class Console extends Component {
   }
 
   updateStatus() {
-    // TODO(jeff): Deselect the process if, somehow, it was not found in the process info after
-    // updating. Also note that `this.state.selectedProcess` doesn't change after updating, which
-    // is important, because (I think) that's what keeps us from re-rendering `Log`.
     this.props.client.getAllProcessInfo()
-      .then((processInfo) => this.setState({ processes: processStatus(processInfo) }))
+      .then((processInfo) => {
+        const newProcesses = deriveProcesses(processInfo);
+        this.setState((prevState) => {
+          const selectedProcess = prevState.selectedProcess && _.findWhere(newProcesses, {
+            name: prevState.selectedProcess.name
+          });
+          return { processes: newProcesses, selectedProcess };
+        });
+      })
       .catch((err) => {
         console.error(err);
         process.exit(1);
@@ -44,11 +49,17 @@ export default class Console extends Component {
   }
 
   render() {
-    if (this.state.selectedProcess) {
-      return <Log process={this.state.selectedProcess} onClose={::this.onDeselect}/>;
-    } else {
-      return <ProcessTable processes={this.state.processes} onSelect={::this.onSelect}/>;
-    }
+    return (
+      this.state.selectedProcess ?
+        <ProcessDetails
+          process={this.state.selectedProcess}
+          onClose={::this.onDeselect}
+        /> :
+        <ProcessTable
+          processes={this.state.processes}
+          onSelect={::this.onSelect}
+        />
+    );
   }
 }
 
@@ -56,7 +67,7 @@ Console.propTypes = {
   client: PropTypes.object.isRequired
 };
 
-function processStatus(processInfo) {
+function deriveProcesses(processInfo) {
   return _.map(processInfo, (proc) => {
     // Not sure how to sort columns using `ink-table`. I think data keys are enumerated in order of
     // addition.
