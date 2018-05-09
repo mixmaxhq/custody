@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
-import screen from './screen';
+import screen from '../screen';
 import {Tail} from 'tail';
 
 // It might be nice to render the entire log file. However this is probably (?) unnecessary and
@@ -39,10 +39,11 @@ export default class Log extends Component {
         this.log.add(line);
       } else {
         logs.push(line);
+        if (logs.length > SCROLLBACK) logs.shift();
       }
     });
     this.tail.on('historicalDataEnd', () => {
-      logs.slice(-SCROLLBACK).forEach((line) => this.log.add(line));
+      logs.forEach((line) => this.log.add(line));
       logs = [];
       initialDataFlushed = true;
     });
