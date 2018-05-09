@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
-import screen from './screen';
+import screen from '../screen';
 import {Tail} from 'tail';
 
 // It might be nice to render the entire log file. However this is probably (?) unnecessary and

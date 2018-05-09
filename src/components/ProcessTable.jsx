@@ -2,7 +2,7 @@ import _ from 'underscore';
 import fuzzy from 'fuzzy';
 import PropTypes from 'prop-types';
 import React, { Component, Fragment } from 'react';
-import screen from './screen';
+import screen from '../screen';
 
 function filterProcesses(search, processes) {
   return fuzzy.filter(search, processes, {

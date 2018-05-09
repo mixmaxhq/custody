@@ -1,4 +1,4 @@
-import Console from './Console';
+import Console from './components/Console';
 import { promisify } from 'promise-callbacks';
 import supervisord from 'supervisord';
 import React from 'react';
