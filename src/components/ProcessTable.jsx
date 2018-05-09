@@ -2,6 +2,7 @@ import _ from 'underscore';
 import fuzzy from 'fuzzy';
 import PropTypes from 'prop-types';
 import React, { Component, Fragment } from 'react';
+import { regexLastIndexOf } from '../utils/string';
 import screen from '../screen';
 
 function filterProcesses(search, processes) {
@@ -88,9 +89,26 @@ export default class ProcessTable extends Component {
     // `ch` will only be defined if the key was a single character input vs. e.g. the down arrow.
     // For 'backspace' and 'enter'/'return', `ch` is some kind of control character though, annoyingly.
     // Also on OS X the enter key emits *two* keypresses in a row, one for 'enter' _and_ 'return'!
-    if (key.full === 'backspace') {
+    if ((key.name === 'backspace') || (key.full === 'C-u' /* Command-Delete */)) {
       this.setState((prevState, props) => {
-        const newSearch = prevState.search.slice(0, -1);
+        // By default slice off the very last character.
+        let terminalIndex = -1;
+        if (key.meta) {
+          // If Option (`meta`) is pressed, clear to the last word boundary like regular OS X text
+          // fields do.
+          // HACK(jeff): Not sure if this is OS X-specific behavior, also I'm not sure how we'd read
+          // Option if I didn't have "Use Option as Meta key" checked in Terminal.app's preferences.
+
+          // Trim to ensure that we skip from e.g. "hello " to "". "hello-" skips to "hello" though,
+          // interestingly.
+          const search = prevState.search.trim();
+          terminalIndex = regexLastIndexOf(search, /\b(?!$)/);
+        } else if (key.full === 'C-u') {
+          // If Command is pressed, clear the line like regular OS X text fields do.
+          // HACK(jeff): Not sure if this is OS X-specific behavior.
+          terminalIndex = 0;
+        }
+        const newSearch = prevState.search.slice(0, terminalIndex);
         if (!newSearch) {
           // Release Esc.
           screen.grabKeys = false;
@@ -103,7 +121,7 @@ export default class ProcessTable extends Component {
       screen.grabKeys = false;
       this.setState({ search: '', processes: this.props.processes });
 
-    } else if (ch && !_.contains(['enter', 'return'], key.full)) {
+    } else if (ch && !_.contains(['enter', 'return'], key.name)) {
       this.setState((prevState, props) => {
         const newSearch = prevState.search + ch;
         // Grab Esc to clear the search, instead of quitting the program.
