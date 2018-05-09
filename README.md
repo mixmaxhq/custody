@@ -20,7 +20,7 @@ individual services' logs with _minimum keystrokes_.
 
 This project should eventually expose a binary to be installed globally.
 
-For now, clone this somewhere, then run `yarn && yarn build`.
+For now, clone this somewhere, then run `npm install && npm run build`.
 
 ## Usage
 
@@ -28,7 +28,7 @@ Make sure that Supervisor is running on port 9001 (Mixmax engineers: this is you
 
 This project should eventually expose a binary to invoke.
 
-For now, build the project using `yarn build`, then run `yarn start`.
+For now, build the project using `npm run build`, then run `npm run start`.
 
 ## Contributing / Roadmap
 
