@@ -13,20 +13,20 @@ individual services
 `supervisorctl status`' is too high-level and static for such an environment, and toggling between
 that view and individual process logs is cumbersome.
 
-Enter `custody`, which gives you a _realtime_ view of both the environment's overall status and
+Enter custody, which gives you a _realtime_ view of both the environment's overall status and
 individual services' logs with _minimum keystrokes_.
 
 ## Installation
 
 ```sh
-npm install -g custody
+npm install -g custody-cli
 ```
 
 ## Usage
 
 Make sure that Supervisor is running on port 9001 (Mixmax engineers: this is your default).
 
-Then run `custody`.
+Then run `custody-cli`.
 
 This will show a view like `supervisorctl status`--except real-time and color-coded:
 
