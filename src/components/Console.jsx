@@ -69,8 +69,7 @@ Console.propTypes = {
 
 function deriveProcesses(processInfo) {
   return _.map(processInfo, (proc) => {
-    // Not sure how to sort columns using `ink-table`. I think data keys are enumerated in order of
-    // addition.
+    // These keys will be enumerated (in table rows) in order of addition.
     return {
       name: (proc.group === proc.name) ? proc.name : `${proc.group}:${proc.name}`,
       state: proc.statename,
