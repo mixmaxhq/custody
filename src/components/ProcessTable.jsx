@@ -48,7 +48,7 @@ export default class ProcessTable extends Component {
 
     this.state = {
       search: '',
-      processes: props.processes
+      processes: filterProcesses('', props.processes)
     };
   }
 
