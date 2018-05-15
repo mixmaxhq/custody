@@ -5,7 +5,7 @@ const pkg = require('./package.json');
 
 export default {
   input: 'src/index.jsx',
-  external: Object.keys(pkg['dependencies']),
+  external: ['events', 'fs', 'path', ...Object.keys(pkg['dependencies'])],
   plugins: [
     nodeResolve({
       // Allow `import`ing of JSX files without specifying the .jsx extension in import paths.

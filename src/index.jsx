@@ -4,19 +4,21 @@ import {render} from 'react-blessed';
 import screen from './screen';
 import ProcessMonitor from './utils/processMonitor';
 
-function onError(err) {
-  // TODO(jeff): Distinguish between fatal and non-fatal errors.
-  console.error(err);
-  process.exit(1);
-}
+export default async function start({ port }) {
+  const processMonitor = new ProcessMonitor({ supervisor: { port } }).on('error', (err) => {
+    // TODO(jeff): Distinguish between fatal and non-fatal errors.
+    console.error(err);
+    process.exit(1);
+  });
 
-export default function start({ port }) {
-  new ProcessMonitor({ supervisor: { port } })
-    .on('update', (processes) => {
-      render(<Console processes={processes}/>, screen);
-    })
-    .on('error', onError)
-    .start();
+  function renderApp() {
+    render(<Console processes={processMonitor.processes}/>, screen);
+  }
+
+  // Load all processes, then render, to avoid a flash as they load in (including probe states).
+  await processMonitor.start();
+  renderApp();
+  processMonitor.on('update', renderApp);
 
   screen.key(['escape', 'C-c'], () => process.exit(0));
 

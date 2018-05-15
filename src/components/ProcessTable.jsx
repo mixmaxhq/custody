@@ -43,8 +43,12 @@ function tableData(processes) {
           case 'name':
             cellValue = process['displayName'];
             break;
+          // For state and description, prefer information reported by the child process if available.
           case 'state':
-            cellValue = process['statename'];
+            cellValue = process['childState'] || process['statename'];
+            break;
+          case 'description':
+            cellValue = process['childDescription'] || process['description'];
             break;
           default:
             cellValue = process[header];
