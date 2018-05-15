@@ -13,6 +13,7 @@
     "watch": "WATCH=true npm run build"
   },
   "dependencies": {
+    "babel-plugin-syntax-object-rest-spread": "^6.13.0",
     "blessed": "^0.1.81",
     "fuzzy": "^0.1.3",
     "promise-callbacks": "^3.1.0",

@@ -1,10 +1,10 @@
-import _ from 'underscore';
+import { HEADERS } from '../ProcessTable';
 import PropTypes from 'prop-types';
 import React from 'react';
 
 export default function ProcessSummary({ process }) {
-  const data = _.without(_.keys(process), 'displayName', 'logfile').map((key) => {
-    let value = process[key];
+  const data = HEADERS.map((key) => {
+    let value = process[key === 'state' ? 'statename' : key];
     switch (key) {
       case 'state':
         if (value !== 'RUNNING') {

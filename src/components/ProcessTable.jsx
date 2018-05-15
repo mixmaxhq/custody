@@ -5,28 +5,52 @@ import React, { Component, Fragment } from 'react';
 import { regexLastIndexOf } from '../utils/string';
 import screen from '../screen';
 
+export const HEADERS = ['name', 'state', 'description'];
+
+function getDerivedProcessesFromProps({ processes }) {
+  return _.map(processes, (process) => {
+    return {
+      ...process,
+      // Rename the process to mimic `supervisorctl status`.
+      name: (process.group === process.name) ? process.name : `${process.group}:${process.name}`
+    };
+  });
+}
+
 function filterProcesses(search, processes) {
   return fuzzy.filter(search, processes, {
     pre: '{underline}',
     post: '{/underline}',
     extract: (process) => process.name
   }).map((result) => {
-    const process = _.clone(result.original);
-    // Record the tagged name.
-    process.displayName = result.string;
-    return process;
+    return {
+      ...result.original,
+      // Record the tagged name.
+      displayName: result.string
+    };
   });
 }
 
 function tableData(processes) {
   if (_.isEmpty(processes)) return processes;
 
-  const headers = _.without(_.keys(processes[0]), 'displayName', 'logfile');
   return [
-    headers,
-    ...processes.map((proc) => {
-      return headers.map((header) => {
-        return cellData(header, proc[header === 'name' ? 'displayName' : header]);
+    HEADERS,
+    ...processes.map((process) => {
+      return HEADERS.map((header) => {
+        let cellValue;
+        switch (header) {
+          case 'name':
+            cellValue = process['displayName'];
+            break;
+          case 'state':
+            cellValue = process['statename'];
+            break;
+          default:
+            cellValue = process[header];
+            break;
+        }
+        return cellData(header, cellValue);
       });
     })
   ];
@@ -43,21 +67,31 @@ function cellData(header, value) {
 }
 
 export default class ProcessTable extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      search: '',
-      processes: filterProcesses('', props.processes)
+  // I don't think that react-blessed@0.2.1 supports `getDerivedStateFromProps`, it doesn't automatically
+  // call this. This is too bad since this means we have to derive processes in the constructor and
+  // in `componentWillReceiveProps`. But at least we can mimic the upcoming API.
+  static getDerivedStateFromProps(nextProps, prevState) {
+    return {
+      search: prevState.search,
+      processes: filterProcesses(prevState.search, getDerivedProcessesFromProps(nextProps))
     };
   }
 
-  // I don't think that react-blessed@0.2.1 supports `getDerivedStateFromProps`, that wasn't being
-  // called. Too bad since this means we have to derive processes in the constructor (since this
-  // isn't called with initial props) and here. react-blessed doesn't support
-  // `UNSAFE_componentWillReceiveProps` either so hopefully this won't stop working in react@17. :\
-  componentWillReceiveProps(nextProps) {
-    this.setState({ processes: filterProcesses(this.state.search, nextProps.processes) });
+  constructor(props) {
+    super(props);
+
+    this.state = ProcessTable.getDerivedStateFromProps(props, {
+      search: '',
+      processes: []
+    });
+  }
+
+  // react-blessed doesn't support `UNSAFE_componentWillReceiveProps` so hopefully this won't stop
+  // working in react@17. :\
+  componentWillReceiveProps() {
+    // ???(jeff): Is `props` equivalent to the argument to `componentWillReceiveProps` here? Which
+    // is appropriate to use?
+    this.setState((prevState, props) => ProcessTable.getDerivedStateFromProps(props, prevState));
   }
 
   // I don't think that react-blessed@0.2.1 supports `getSnapshotBeforeUpdate`, that wasn't being
@@ -115,20 +149,20 @@ export default class ProcessTable extends Component {
           // Release Esc.
           screen.grabKeys = false;
         }
-        return { search: newSearch, processes: filterProcesses(newSearch, props.processes) };
+        return ProcessTable.getDerivedStateFromProps(props, { ...prevState, search: newSearch });
       });
 
     } else if (key.full === 'escape') {
       // Release Esc.
       screen.grabKeys = false;
-      this.setState({ search: '', processes: this.props.processes });
+      this.setState(ProcessTable.getDerivedStateFromProps(this.props, { ...this.state, search: '' }));
 
     } else if (ch && !_.contains(['enter', 'return'], key.name)) {
       this.setState((prevState, props) => {
         const newSearch = prevState.search + ch;
         // Grab Esc to clear the search, instead of quitting the program.
         screen.grabKeys = true;
-        return { search: newSearch, processes: filterProcesses(newSearch, props.processes) };
+        return ProcessTable.getDerivedStateFromProps(props, { ...prevState, search: newSearch });
       });
     }
   }
@@ -157,6 +191,8 @@ export default class ProcessTable extends Component {
         <listtable
           // Unfortunately react-blessed@0.2.1 doesn't support `React.createRef`.
           ref={(table) => this.table = table}
+          // TODO(jeff): Clicking seems to be (have become?) finicky, sometimes the process details
+          // opens and then immediately closes.
           mouse
           keys
           focused
