@@ -24,9 +24,14 @@ npm install -g custody-cli
 
 ## Usage
 
-Make sure that Supervisor is running on port 9001 (Mixmax engineers: this is your default).
+Make sure that Supervisor is running. Then run
 
-Then run `custody-cli`.
+```sh
+custody-cli
+```
+
+If you're running Supervisor on a port other than 9001 (Mixmax engineers: your default),
+pass that using the `--port` flag.
 
 This will show a view like `supervisorctl status`--except real-time and color-coded:
 
