@@ -6,7 +6,7 @@ import { promisify } from 'promise-callbacks';
 const { readFile, readdir, unlink } = promisify.methods(require('fs'), ['readFile', 'readdir', 'unlink']);
 const mkdirp = promisify(require('mkdirp'));
 
-// Keep these values in sync with those inside `probe/src/index.js`.
+// Keep these values in sync with those inside `custody-probe`.
 const PROC_DIR = '/usr/local/var/custody/services';
 const STATEFILE_EXT = '.statefile';
 export const STATES = {
