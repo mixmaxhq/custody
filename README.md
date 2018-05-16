@@ -60,6 +60,14 @@ If you'd like notifications to stay on the screen until dismissed, go to System 
 Notifications, look for "terminal-notifier" in the list at left, and change its alert style from
 Banners to Alerts. We can't do this for you, unfortunately.
 
+## Automatic error recovery
+
+If you've added [probes](https://github.com/mixmaxhq/custody-probe) to any of your servers,
+custody can automatically recover certain errors reported by those probes. In particular, if a
+server reports an EADDRINUSE error (see https://github.com/mixmaxhq/custody/issues/3), custody will
+automatically fix the port conflict by killing the process listening to your desired port, then
+restarting your process.
+
 ## Contributing / Roadmap
 
 We welcome bug reports and feature suggestions. PRs are even better!
