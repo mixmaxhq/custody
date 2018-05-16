@@ -44,6 +44,11 @@ Hit enter or double-click on a service to open its logs:
 
 ![](docs/logs.png)
 
+If you run `custody-cli` with `--notifications`, it will show desktop notifications when the
+services' states change. You can click the "Show" button on the notification to activate the Terminal
+and open custody to the corresponding service's logs. This feature is experimental--please contribute
+UX feedback!
+
 ## Contributing / Roadmap
 
 We welcome bug reports and feature suggestions. PRs are even better!

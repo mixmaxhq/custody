@@ -1,8 +1,26 @@
 import _ from 'underscore';
+import { promisify } from 'promise-callbacks';
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
+import notifier from 'node-notifier';
 import ProcessDetails from './processDetails';
 import ProcessTable from './ProcessTable';
+import screen from '../screen';
+
+const exec = promisify(require('child_process').exec);
+
+function processHasChangedState(prevProps) {
+  return (process) => {
+    const previousProcess = _.findWhere(prevProps.processes, { name: process.name });
+
+    // New processes don't count as having *changed* state.
+    if (!previousProcess) return false;
+
+    const effectiveState = process.childState || process.statename;
+    const previousEffectiveState = previousProcess.childState || previousProcess.statename;
+    return (effectiveState !== previousEffectiveState);
+  };
+}
 
 export default class Console extends Component {
   constructor(props) {
@@ -24,6 +42,35 @@ export default class Console extends Component {
         name: prevState.selectedProcess.name
       });
       return { selectedProcess };
+    });
+  }
+
+  componentDidUpdate(prevProps) {
+    if (!this.props.notifications) return;
+
+    this.props.processes.filter(processHasChangedState(prevProps)).forEach((process) => {
+      const effectiveState = process.childState || process.statename;
+      notifier.notify({
+        title: `${process.name} is now ${effectiveState}`,
+        message: process.childDescription || process.description,
+        closeLabel: 'Close',
+        actions: 'Show'
+      }, (err, response) => {
+        if (err) {
+          screen.debug('Error showing notification', err);
+        } else if (response === 'activate') {
+          // Activate the Terminal if necessary. We should be able to pass the `activate` option
+          // through `notifier.notify` to `terminal-notifier` but it doesn't work for some reason. :\
+          exec('open -a Terminal').catch((err) => screen.debug('Could not activate Terminal:', err));
+
+          // Show the logs for the (current version of) the process if it's still running (safety
+          // belts--the user may have waited a bit to click this notification).
+          process = _.findWhere(this.props.processes, { name: process.name });
+          if (process) {
+            this.setState({ selectedProcess: process });
+          }
+        }
+      });
     });
   }
 
@@ -51,5 +98,10 @@ export default class Console extends Component {
 }
 
 Console.propTypes = {
-  processes: PropTypes.array.isRequired
+  processes: PropTypes.array.isRequired,
+  notifications: PropTypes.bool
+};
+
+Console.defaultProps = {
+  notifications: false
 };
