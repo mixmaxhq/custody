@@ -7,6 +7,7 @@ import notifier from 'node-notifier';
 import ProcessDetails from './processDetails';
 import ProcessTable from './ProcessTable';
 import screen from '../screen';
+import { STATES } from '../utils/process';
 
 const exec = promisify(require('child_process').exec);
 
@@ -49,29 +50,38 @@ export default class Console extends Component {
   componentDidUpdate(prevProps) {
     if (!this.props.notifications) return;
 
-    this.props.processes.filter(processHasChangedState(prevProps)).forEach((process) => {
-      const { state, description } = effectiveState(process);
-      notifier.notify({
-        title: `${process.name} is now ${state}`,
-        message: description,
-        closeLabel: 'Close',
-        actions: 'Show'
-      }, (err, response) => {
-        if (err) {
-          screen.debug('Error showing notification', err);
-        } else if (response === 'activate') {
-          // Activate the Terminal if necessary. We should be able to pass the `activate` option
-          // through `notifier.notify` to `terminal-notifier` but it doesn't work for some reason. :\
-          exec('open -a Terminal').catch((err) => screen.debug('Could not activate Terminal:', err));
+    this.props.processes
+      .filter(processHasChangedState(prevProps))
+      .forEach(::this.notifyOfProcessChange);
+  }
 
-          // Show the logs for the (current version of) the process if it's still running (safety
-          // belts--the user may have waited a bit to click this notification).
-          process = _.findWhere(this.props.processes, { name: process.name });
-          if (process) {
-            this.setState({ selectedProcess: process });
-          }
+  notifyOfProcessChange(process) {
+    const { state, description } = effectiveState(process);
+
+    // Don't display a notification if the process is starting since it'll immediately transition
+    // to another state.
+    if (state === STATES.STARTING) return;
+
+    notifier.notify({
+      title: `${process.name} is now ${state}`,
+      message: description,
+      closeLabel: 'Close',
+      actions: 'Show'
+    }, (err, response) => {
+      if (err) {
+        screen.debug('Error showing notification:', err, process);
+      } else if (response === 'activate') {
+        // Activate the Terminal if necessary. We should be able to pass the `activate` option
+        // through `notifier.notify` to `terminal-notifier` but it doesn't work for some reason. :\
+        exec('open -a Terminal').catch((err) => screen.debug('Could not activate Terminal:', err));
+
+        // Show the logs for the (current version of) the process if it's still running (safety
+        // belts--the user may have waited a bit to click this notification).
+        process = _.findWhere(this.props.processes, { name: process.name });
+        if (process) {
+          this.setState({ selectedProcess: process });
         }
-      });
+      }
     });
   }
 

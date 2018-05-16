@@ -2,6 +2,9 @@
  * States of a process' lifecycle.
  */
 export const STATES = {
+  // The process is starting up.
+  STARTING: 'STARTING',
+
   // The process is running.
   RUNNING: 'RUNNING',
 
