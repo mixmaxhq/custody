@@ -44,10 +44,16 @@ Hit enter or double-click on a service to open its logs:
 
 ![](docs/logs.png)
 
+### Notifications
+
 If you run `custody-cli` with `--notifications`, it will show desktop notifications when the
 services' states change. You can click the "Show" button on the notification to activate the Terminal
 and open custody to the corresponding service's logs. This feature is experimental--please contribute
 UX feedback!
+
+If you'd like notifications to stay on the screen until dismissed, go to System Preferences ->
+Notifications -> terminal-notifier and change the style from Banners to Alerts. We can't do this
+for you nor on a per-notification basis, unfortunately.
 
 ## Contributing / Roadmap
 
