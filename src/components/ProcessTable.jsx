@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import { effectiveState } from '../utils/process';
 import fuzzy from 'fuzzy';
 import PropTypes from 'prop-types';
 import React, { Component, Fragment } from 'react';
@@ -45,10 +46,8 @@ function tableData(processes) {
             break;
           // For state and description, prefer information reported by the child process if available.
           case 'state':
-            cellValue = process['childState'] || process['statename'];
-            break;
           case 'description':
-            cellValue = process['childDescription'] || process['description'];
+            cellValue = effectiveState(process)[header];
             break;
           default:
             cellValue = process[header];
