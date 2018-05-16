@@ -1,10 +1,26 @@
-import _ from 'underscore';
+import { HEADERS } from '../ProcessTable';
 import PropTypes from 'prop-types';
 import React from 'react';
 
 export default function ProcessSummary({ process }) {
-  const data = _.without(_.keys(process), 'displayName', 'logfile').map((key) => {
-    let value = process[key];
+  const data = HEADERS.map((key) => {
+    let value;
+
+    // Derive the data.
+    switch (key) {
+      // For state and description, prefer information reported by the child process if available.
+      case 'state':
+        value = process['childState'] || process['statename'];
+        break;
+      case 'description':
+        value = process['childDescription'] || process['description'];
+        break;
+      default:
+        value = process[key];
+        break;
+    }
+
+    // Format the data.
     switch (key) {
       case 'state':
         if (value !== 'RUNNING') {
@@ -14,6 +30,7 @@ export default function ProcessSummary({ process }) {
           value = `{red-fg}${value}{/red-fg}`;
         }
     }
+
     return value;
   });
 

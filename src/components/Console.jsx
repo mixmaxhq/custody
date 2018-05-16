@@ -9,35 +9,22 @@ export default class Console extends Component {
     super(props);
 
     this.state = {
-      processes: [],
       selectedProcess: null
     };
   }
 
-  componentDidMount() {
-    // Not sure what a good update interval is here.
-    this.updateTimer = setInterval(() => this.updateStatus(), 1000);
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.updateTimer);
-  }
-
-  updateStatus() {
-    this.props.client.getAllProcessInfo()
-      .then((processInfo) => {
-        const newProcesses = deriveProcesses(processInfo);
-        this.setState((prevState) => {
-          const selectedProcess = prevState.selectedProcess && _.findWhere(newProcesses, {
-            name: prevState.selectedProcess.name
-          });
-          return { processes: newProcesses, selectedProcess };
-        });
-      })
-      .catch((err) => {
-        console.error(err);
-        process.exit(1);
+  // I don't think that react-blessed@0.2.1 supports `getDerivedStateFromProps`, that wasn't being
+  // called. react-blessed doesn't support `UNSAFE_componentWillReceiveProps` either so hopefully
+  // this won't stop working in react@17. :\
+  componentWillReceiveProps() {
+    // ???(jeff): Is `props` equivalent to the argument to `componentWillReceiveProps` here? Which
+    // is appropriate to use?
+    this.setState((prevState, props) => {
+      const selectedProcess = prevState.selectedProcess && _.findWhere(props.processes, {
+        name: prevState.selectedProcess.name
       });
+      return { selectedProcess };
+    });
   }
 
   onSelect(process) {
@@ -56,7 +43,7 @@ export default class Console extends Component {
           onClose={::this.onDeselect}
         /> :
         <ProcessTable
-          processes={this.state.processes}
+          processes={this.props.processes}
           onSelect={::this.onSelect}
         />
     );
@@ -64,19 +51,5 @@ export default class Console extends Component {
 }
 
 Console.propTypes = {
-  client: PropTypes.object.isRequired
+  processes: PropTypes.array.isRequired
 };
-
-function deriveProcesses(processInfo) {
-  return _.map(processInfo, (proc) => {
-    // These keys will be enumerated (in table rows) in order of addition.
-    return {
-      name: (proc.group === proc.name) ? proc.name : `${proc.group}:${proc.name}`,
-      state: proc.statename,
-      description: proc.description,
-      logfile: proc.logfile
-    };
-  });
-}
-
-

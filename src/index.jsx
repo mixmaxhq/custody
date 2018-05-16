@@ -1,15 +1,24 @@
 import Console from './components/Console';
-import { promisify } from 'promise-callbacks';
 import React from 'react';
 import {render} from 'react-blessed';
 import screen from './screen';
-import supervisord from 'supervisord';
+import ProcessMonitor from './utils/processMonitor';
 
-export default function start({ port }) {
-  const client = promisify.all(supervisord.connect(`http://localhost:${port}`));
+export default async function start({ port }) {
+  const processMonitor = new ProcessMonitor({ supervisor: { port } }).on('error', (err) => {
+    // TODO(jeff): Distinguish between fatal and non-fatal errors.
+    console.error(err);
+    process.exit(1);
+  });
 
-  // Rendering the React app using our screen
-  render(<Console client={client}/>, screen);
+  function renderApp() {
+    render(<Console processes={processMonitor.processes}/>, screen);
+  }
+
+  // Load all processes, then render, to avoid a flash as they load in (including probe states).
+  await processMonitor.start();
+  renderApp();
+  processMonitor.on('update', renderApp);
 
   screen.key(['escape', 'C-c'], () => process.exit(0));
 

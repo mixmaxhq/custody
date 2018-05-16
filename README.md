@@ -6,7 +6,7 @@ development environment, where
 * services frequently become unstable due to quirks of developers' setups or bugs in Supervisor
 itself ([Mixmax-internal link](https://docs.google.com/document/d/1H37o4X51M5dWzrF5q_bOuZNaaag8iQYMebTEwjhJWBk/edit#heading=h.5tsycreyssqn))
 * the processes monitored by Supervisor may be build e.g. `gulp` processes, not the services whose
-statuses change i.e. webservers
+states change i.e. webservers
 * developers need to rapidly toggle between views of the environment's overall status and logs from
 individual services
 
@@ -31,6 +31,10 @@ Then run `custody-cli`.
 This will show a view like `supervisorctl status`--except real-time and color-coded:
 
 ![](docs/status.png)
+
+If the programs shown here are build processes, that in turn run server processes,
+you can use [custody-probe](https://github.com/mixmaxhq/custody-probe)
+to report the states of the servers.
 
 Scroll through the list using your arrow keys or the mouse--or type to filter to a service of interest:
 

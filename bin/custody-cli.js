@@ -16,4 +16,7 @@ const argv = require('yargs')
   .alias('h', 'help')
   .argv;
 
-custody(argv);
+custody(argv).catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
