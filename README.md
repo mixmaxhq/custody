@@ -57,8 +57,8 @@ and open custody to the corresponding service's logs. This feature is experiment
 UX feedback!
 
 If you'd like notifications to stay on the screen until dismissed, go to System Preferences ->
-Notifications -> terminal-notifier and change the style from Banners to Alerts. We can't do this
-for you nor on a per-notification basis, unfortunately.
+Notifications, look for "terminal-notifier" in the list at left, and change its alert style from
+Banners to Alerts. We can't do this for you nor on a per-notification basis, unfortunately.
 
 ## Contributing / Roadmap
 
