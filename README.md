@@ -58,7 +58,7 @@ UX feedback!
 
 If you'd like notifications to stay on the screen until dismissed, go to System Preferences ->
 Notifications, look for "terminal-notifier" in the list at left, and change its alert style from
-Banners to Alerts. We can't do this for you nor on a per-notification basis, unfortunately.
+Banners to Alerts. We can't do this for you, unfortunately.
 
 ## Contributing / Roadmap
 
