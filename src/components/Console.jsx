@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import { effectiveState } from '../utils/process';
 import { promisify } from 'promise-callbacks';
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
@@ -16,9 +17,9 @@ function processHasChangedState(prevProps) {
     // New processes don't count as having *changed* state.
     if (!previousProcess) return false;
 
-    const effectiveState = process.childState || process.statename;
-    const previousEffectiveState = previousProcess.childState || previousProcess.statename;
-    return (effectiveState !== previousEffectiveState);
+    const { state: currentState } = effectiveState(process);
+    const { state: previousState } = effectiveState(previousProcess);
+    return (currentState !== previousState);
   };
 }
 
@@ -49,10 +50,10 @@ export default class Console extends Component {
     if (!this.props.notifications) return;
 
     this.props.processes.filter(processHasChangedState(prevProps)).forEach((process) => {
-      const effectiveState = process.childState || process.statename;
+      const { state, description } = effectiveState(process);
       notifier.notify({
-        title: `${process.name} is now ${effectiveState}`,
-        message: process.childDescription || process.description,
+        title: `${process.name} is now ${state}`,
+        message: description,
         closeLabel: 'Close',
         actions: 'Show'
       }, (err, response) => {

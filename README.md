@@ -24,9 +24,14 @@ npm install -g custody-cli
 
 ## Usage
 
-Make sure that Supervisor is running on port 9001 (Mixmax engineers: this is your default).
+Make sure that Supervisor is running. Then run
 
-Then run `custody-cli`.
+```sh
+custody-cli
+```
+
+If you're running Supervisor on a port other than 9001 (Mixmax engineers: your default),
+pass that using the `--port` flag.
 
 This will show a view like `supervisorctl status`--except real-time and color-coded:
 
@@ -52,8 +57,8 @@ and open custody to the corresponding service's logs. This feature is experiment
 UX feedback!
 
 If you'd like notifications to stay on the screen until dismissed, go to System Preferences ->
-Notifications -> terminal-notifier and change the style from Banners to Alerts. We can't do this
-for you nor on a per-notification basis, unfortunately.
+Notifications, look for "terminal-notifier" in the list at left, and change its alert style from
+Banners to Alerts. We can't do this for you, unfortunately.
 
 ## Contributing / Roadmap
 
