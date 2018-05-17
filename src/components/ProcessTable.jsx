@@ -63,6 +63,8 @@ function cellData(header, value) {
   switch (header) {
     case 'state':
       if (value !== 'RUNNING') {
+        // TODO(jeff): Figure out how to maintain this when the row is selected. Weird that it
+        // doesn’t' work like in `ProcessSummary`.
         value = `{red-fg}${value}{/}`;
       }
   }
@@ -201,8 +203,7 @@ export default class ProcessTable extends Component {
           focused
           align='left'
           style={{
-            item: { fg: 'black' },
-            selected: { fg: 'white', bg: 'black' },
+            selected: { inverse: true },
             header: { bold: true }
           }}
           tags // Enables cell content to contain color tags.

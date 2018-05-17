@@ -23,9 +23,9 @@ export default function ProcessSummary({ process }) {
     switch (key) {
       case 'state':
         if (value !== 'RUNNING') {
-          // Note that this doesn't preserve the black background--text colors aren't composited,
-          // apparently. We could fix this by wrapping in `{black-bg}` but I think it's better for
-          // contrast to have white background.
+          // Note that this doesn't preserve the inverted background--text colors aren't composited,
+          // apparently. We could fix this by wrapping in a background-color tag but I think it's
+          // better for contrast to have the normal background.
           value = `{red-fg}${value}{/red-fg}`;
         }
     }
@@ -39,7 +39,7 @@ export default function ProcessSummary({ process }) {
       tags // Enables cell content to contain color tags.
       style={{
         // Mimics the selection in the process table.
-        header: { fg: 'white', bg: 'black' }
+        header: { inverse: true }
       }}
       height={1}
     />
