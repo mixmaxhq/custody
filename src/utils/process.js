@@ -4,6 +4,18 @@ import { promisify } from 'promise-callbacks';
 const exec = promisify(require('child_process').exec);
 
 /**
+ * Returns a name for the process that mimics that shown by `supervisorctl status`, incorporating
+ * both the process' name and its group (if any).
+ *
+ * @param {Object} process - The process.
+ *
+ * @return {String} The display name.
+ */
+export function displayName(process) {
+  return (process.group === process.name) ? process.name : `${process.group}:${process.name}`;
+}
+
+/**
  * States of a process' lifecycle.
  */
 export const STATES = {
