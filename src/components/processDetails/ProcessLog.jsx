@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
-import screen from '../../screen';
 import {Tail} from 'tail';
 
 // It might be nice to render the entire log file. However this is probably (?) unnecessary and
@@ -10,17 +9,11 @@ const SCROLLBACK = 100 /* lines */;
 
 export default class ProcessLog extends Component {
   componentDidMount() {
-    // Grab Esc to use in navigation, instead of quitting the program.
-    screen.grabKeys = true;
-
     this.startTailing();
   }
 
   componentWillUnmount() {
     this.stopTailing();
-
-    // Release Esc.
-    screen.grabKeys = false;
   }
 
   startTailing() {
@@ -53,12 +46,6 @@ export default class ProcessLog extends Component {
     this.tail.unwatch();
   }
 
-  onKeypress(ch, key) {
-    if (key.name === 'escape') {
-      this.props.onClose();
-    }
-  }
-
   render() {
     return (
       // Unfortunately react-blessed@0.2.1 doesn't support `React.createRef`.
@@ -68,8 +55,7 @@ export default class ProcessLog extends Component {
         input // Enables 'keypress'.
         mouse // This and `keys` enable the user to navigate the logs.
         keys
-        focused
-        onKeypress={::this.onKeypress}
+        focused={this.props.focused}
         scrollback={SCROLLBACK}
         // TODO(jeff): Enable pinning to the bottom of the logs. Possible using the `scrollOnInput`
         // prop, just requires us to give the user a keyboard shortcut to do so. Not totally sure
@@ -83,6 +69,10 @@ export default class ProcessLog extends Component {
 
 ProcessLog.propTypes = {
   process: PropTypes.object.isRequired,
-  onClose: PropTypes.func,
+  focused: PropTypes.bool,
   layout: PropTypes.object
+};
+
+ProcessLog.defaultProps = {
+  focused: false
 };

@@ -21,6 +21,7 @@ export default {
         }]
       ],
       plugins: [
+        'external-helpers',
         'transform-react-jsx',
         'transform-function-bind',
         // Don't need to transform object rest spread since Node 8.9.3 supports it, but for some

@@ -17,6 +17,7 @@
     "watch": "WATCH=true npm run build"
   },
   "dependencies": {
+    "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-syntax-object-rest-spread": "^6.13.0",
     "blessed": "^0.1.81",
     "fuzzy": "^0.1.3",
