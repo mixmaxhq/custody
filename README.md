@@ -49,6 +49,8 @@ Hit enter or double-click on a service to open its logs:
 
 ![](docs/logs.png)
 
+Within this view, you can stop/start/restart the service using the keyboard shortcuts in the bottom toolbar.
+
 ### Notifications
 
 If you run `custody-cli` with `--notifications`, it will show desktop notifications when the

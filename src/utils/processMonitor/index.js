@@ -69,11 +69,29 @@ export default class ProcessMonitor extends EventEmitter {
       return;
     }
 
-    // Merge child state.
+    // Enhance the processes with various data and methods.
     this._processes.forEach((process) => {
+      // Merge child state.
       const previousProcess = previousProcessesById[process.pid];
       process.childState = previousProcess && previousProcess.childState;
       process.childDescription = previousProcess && previousProcess.childDescription;
+
+      // Give the processes an object-oriented API for managing their state. Especially handy for
+      // use within components, without a reference to this process monitor.
+      const supervisor = this._supervisor;
+      _.extend(process, {
+        async start() {
+          return supervisor.startProcess(this.name);
+        },
+        async stop() {
+          return supervisor.stopProcess(this.name);
+        },
+        async restart() {
+          // There's no "restartProcess" API apparently, boo.
+          await this.stop();
+          await this.start();
+        }
+      });
     });
 
     this.emit('update', this._processes);
@@ -119,8 +137,6 @@ export default class ProcessMonitor extends EventEmitter {
     await clearPortConflict(conflictingPort);
 
     screen.debug('Port conflict cleared. Restarting', name);
-    // There's no "restartProcess" API apparently, boo.
-    await this._supervisor.stopProcess(name);
-    await this._supervisor.startProcess(name);
+    await process.restart();
   }
 }
