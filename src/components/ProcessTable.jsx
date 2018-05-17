@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import { effectiveState } from '../utils/process';
+import { displayName, effectiveState } from '../utils/process';
 import fuzzy from 'fuzzy';
 import PropTypes from 'prop-types';
 import React, { Component, Fragment } from 'react';
@@ -13,7 +13,7 @@ function getDerivedProcessesFromProps({ processes }) {
     return {
       ...process,
       // Rename the process to mimic `supervisorctl status`.
-      name: (process.group === process.name) ? process.name : `${process.group}:${process.name}`
+      displayName: displayName(process)
     };
   });
 }
@@ -22,7 +22,7 @@ function filterProcesses(search, processes) {
   return fuzzy.filter(search, processes, {
     pre: '{underline}',
     post: '{/underline}',
-    extract: (process) => process.name
+    extract: (process) => process.displayName
   }).map((result) => {
     return {
       ...result.original,

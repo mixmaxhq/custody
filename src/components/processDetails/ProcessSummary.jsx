@@ -1,4 +1,4 @@
-import { effectiveState } from '../../utils/process';
+import { displayName, effectiveState } from '../../utils/process';
 import { HEADERS } from '../ProcessTable';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -9,6 +9,9 @@ export default function ProcessSummary({ process }) {
 
     // Derive the data.
     switch (key) {
+      case 'name':
+        value = displayName(process);
+        break;
       // For state and description, prefer information reported by the child process if available.
       case 'state':
       case 'description':
