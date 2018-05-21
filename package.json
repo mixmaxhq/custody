@@ -29,7 +29,7 @@
     "react": "^16.3.2",
     "react-blessed": "^0.2.1",
     "supervisord": "^0.1.0",
-    "tail": "https://github.com/mixmaxhq/node-tail#f6de8784bec159448cbf0cb1d7336daa417b9dae",
+    "tail": "git+https://github.com/mixmaxhq/node-tail.git#4fadabf",
     "underscore": "^1.9.0",
     "yargs": "^11.0.0"
   },

@@ -1,6 +1,8 @@
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
 import {Tail} from 'tail';
+import screen from '../../screen';
+import { statSync } from 'fs';
 
 // It might be nice to render the entire log file. However this is probably (?) unnecessary and
 // (more to the point) for complex/active services like app, the log file is quite large and, if we
@@ -20,30 +22,50 @@ export default class ProcessLog extends Component {
     // Safety belts.
     if (this.tail) return;
 
+    const { name, logfile } = this.props.process;
+
+    function onTailError(err) {
+      screen.debug(`Could not tail ${name}'s logfile ${logfile}:`, err);
+    }
+
+    // We need to check that the logfile exists before initializing `Tail` because we can't handle
+    // such an error if we let `Tail` emit it: https://github.com/lucagrulla/node-tail/issues/66
+    try {
+      statSync(logfile);
+    } catch (e) {
+      onTailError(e);
+      return;
+    }
+
     // As documented on `SCROLLBACK`, we can't render the entire log file. However, the 'tail'
     // module lacks a `-n`-like option to get the last `SCROLLBACK` lines. So what we do is load the
     // entire file, but wait to render only the last `SCROLLBACK` lines, then start streaming.
-    this.tail = new Tail(this.props.process.logfile, { fromBeginning: true });
+    this.tail = new Tail(logfile, { fromBeginning: true });
 
     let logs = [];
     let initialDataFlushed = false;
-    this.tail.on('line', (line) => {
-      if (initialDataFlushed) {
-        this.log.add(line);
-      } else {
-        logs.push(line);
-        if (logs.length > SCROLLBACK) logs.shift();
-      }
-    });
-    this.tail.on('historicalDataEnd', () => {
-      logs.forEach((line) => this.log.add(line));
-      logs = [];
-      initialDataFlushed = true;
-    });
+    this.tail
+      .on('line', (line) => {
+        if (initialDataFlushed) {
+          this.log.add(line);
+        } else {
+          logs.push(line);
+          if (logs.length > SCROLLBACK) logs.shift();
+        }
+      })
+      .on('historicalDataEnd', () => {
+        logs.forEach((line) => this.log.add(line));
+        logs = [];
+        initialDataFlushed = true;
+      })
+      .on('error', onTailError);
   }
 
   stopTailing() {
-    this.tail.unwatch();
+    if (this.tail) {
+      this.tail.unwatch();
+      this.tail = null;
+    }
   }
 
   render() {
