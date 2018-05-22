@@ -36,10 +36,10 @@ export default class ProcessLog extends Component {
       if (e.code === 'ENOENT') {
         // This logfile does not exist (has disappeared?) for some reason:
         // https://github.com/mixmaxhq/custody/issues/6 Restart the process to fix.
-        screen.debug(`${name}'s logfile is missing. Restarting process to fix…`);
+        this.log.add(`${name}'s logfile is missing. Restarting process to fix…`);
         this.props.process.restart()
           .then(() => this.startTailing())
-          .catch((err) => screen.debug(`Could not restart ${name}:`, err));
+          .catch((err) => this.log.add(`Could not restart ${name}: ${err}`));
       } else {
         onTailError(e);
       }
