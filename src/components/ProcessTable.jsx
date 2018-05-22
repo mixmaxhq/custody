@@ -4,7 +4,6 @@ import fuzzy from 'fuzzy';
 import PropTypes from 'prop-types';
 import React, { Component, Fragment } from 'react';
 import { regexLastIndexOf } from '../utils/string';
-import screen from '../screen';
 
 export const HEADERS = ['name', 'state', 'description'];
 
