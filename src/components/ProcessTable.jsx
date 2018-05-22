@@ -150,23 +150,15 @@ export default class ProcessTable extends Component {
           terminalIndex = 0;
         }
         const newSearch = prevState.search.slice(0, terminalIndex);
-        if (!newSearch) {
-          // Release Esc.
-          screen.grabKeys = false;
-        }
         return ProcessTable.getDerivedStateFromProps(props, { ...prevState, search: newSearch });
       });
 
     } else if (key.full === 'escape') {
-      // Release Esc.
-      screen.grabKeys = false;
       this.setState(ProcessTable.getDerivedStateFromProps(this.props, { ...this.state, search: '' }));
 
     } else if (ch && !_.contains(['enter', 'return'], key.name)) {
       this.setState((prevState, props) => {
         const newSearch = prevState.search + ch;
-        // Grab Esc to clear the search, instead of quitting the program.
-        screen.grabKeys = true;
         return ProcessTable.getDerivedStateFromProps(props, { ...prevState, search: newSearch });
       });
     }

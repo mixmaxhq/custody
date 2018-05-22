@@ -26,8 +26,8 @@ export default async function start({ port, notifications }) {
   renderApp();
   processMonitor.on('update', renderApp);
 
-  screen.key(['escape', 'C-c'], () => process.exit(0));
+  screen.key(['C-c'], () => process.exit(0));
 
-  // Allow components to lock Esc for use in navigation, but not Ctrl-C (exit) or F12 (debug log).
+  // Don't allow components to lock-out our control keys, Ctrl-C (exit) and F12 (debug log).
   screen.ignoreLocked = ['C-c', 'f12'];
 }
