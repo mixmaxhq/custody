@@ -3,7 +3,6 @@ import Summary from './ProcessSummary';
 import Log from './ProcessLog';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import screen from '../../screen';
 
 export default class ProcessDetails extends Component {
   componentDidMount() {
