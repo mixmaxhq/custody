@@ -7,19 +7,11 @@ import screen from '../../screen';
 
 export default class ProcessDetails extends Component {
   componentDidMount() {
-    // Grab Esc to use in navigation, instead of quitting the program.
-    screen.grabKeys = true;
-
     // The log has to be focused--not our root element--in order to enable keyboard navigation
     // thereof. But then this means that we have to listen for the log's keypress events, using the
     // special bubbling syntax https://github.com/chjj/blessed#event-bubbling, and have to do so
     // manually (ugh): https://github.com/Yomguithereal/react-blessed/issues/61
     this.el.on('element keypress', ::this.onElementKeypress);
-  }
-
-  componentWillUnmount() {
-    // Release Esc.
-    screen.grabKeys = false;
   }
 
   onElementKeypress(el, ch, key) {
