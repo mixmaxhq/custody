@@ -1,9 +1,9 @@
 import _ from 'underscore';
-import { displayName, effectiveState } from '../utils/process';
+import { displayName, effectiveState } from '/utils/process';
 import fuzzy from 'fuzzy';
 import PropTypes from 'prop-types';
 import React, { Component, Fragment } from 'react';
-import { regexLastIndexOf } from '../utils/string';
+import { regexLastIndexOf } from '/utils/string';
 
 export const HEADERS = ['name', 'state', 'description'];
 

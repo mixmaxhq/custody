@@ -36,6 +36,14 @@ export default class ProcessDetails extends Component {
           ref={(controls) => this.controls = controls}
           process={this.props.process}
           layout={{ top: '100%-2' }}
+          controls={[
+            ['Esc', {
+              verb: 'go back',
+              toggle() {
+                // Nothing to do since we already handle escape above.
+              }
+            }]
+          ]}
         />
       </box>
     );

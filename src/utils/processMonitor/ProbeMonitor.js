@@ -1,7 +1,7 @@
 import EventEmitter from 'events';
 import { basename, join as joinPath } from 'path';
 import { promisify } from 'promise-callbacks';
-import { STATES } from '../process';
+import { STATES } from '/utils/process';
 import { watch } from 'fs';
 
 const { readFile, readdir, unlink } = promisify.methods(require('fs'), ['readFile', 'readdir', 'unlink']);

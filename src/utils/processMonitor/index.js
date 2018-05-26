@@ -1,10 +1,10 @@
 import _ from 'underscore';
-import { detectPortConflict, clearPortConflict } from '../process';
+import { detectPortConflict, clearPortConflict } from '/utils/process';
 import EventEmitter from 'events';
 import ProbeMonitor, { STATES } from './ProbeMonitor';
 import { promisify } from 'promise-callbacks';
 import supervisord from 'supervisord';
-import screen from '../../screen';
+import screen from '/screen';
 
 export default class ProcessMonitor extends EventEmitter {
   constructor({

@@ -1,5 +1,5 @@
-import { displayName, effectiveState } from '../../utils/process';
-import { HEADERS } from '../ProcessTable';
+import { displayName, effectiveState } from '/utils/process';
+import { HEADERS } from '/components/ProcessTable';
 import PropTypes from 'prop-types';
 import React from 'react';
 

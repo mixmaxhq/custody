@@ -42,6 +42,7 @@
     "eslint-config-mixmax": "^1.0.0",
     "rollup": "^0.58.2",
     "rollup-plugin-babel": "^3.0.4",
-    "rollup-plugin-node-resolve": "^3.3.0"
+    "rollup-plugin-node-resolve": "^3.3.0",
+    "rollup-plugin-root-import": "^0.2.2"
   }
 }

@@ -1,13 +1,13 @@
 import _ from 'underscore';
-import { effectiveState } from '../utils/process';
+import { effectiveState } from '/utils/process';
 import { promisify } from 'promise-callbacks';
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
 import notifier from 'node-notifier';
 import ProcessDetails from './processDetails';
 import ProcessTable from './ProcessTable';
-import screen from '../screen';
-import { STATES } from '../utils/process';
+import screen from '/screen';
+import { STATES } from '/utils/process';
 
 const exec = promisify(require('child_process').exec);
 
