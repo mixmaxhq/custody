@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
 import {Tail} from 'tail';
-import screen from '/screen';
+import screen, { enableMouse } from '/screen';
 import { statSync } from 'fs';
 
 // It might be nice to render the entire log file. However this is probably (?) unnecessary and
@@ -12,11 +12,14 @@ const SCROLLBACK = 100 /* lines */;
 export default class ProcessLog extends Component {
   componentDidMount() {
     this._isMounted = true;
+    // See comment about `mouse` in `render`.
+    enableMouse(false);
     this.startTailing();
   }
 
   componentWillUnmount() {
     this.stopTailing();
+    enableMouse(true);
     this._isMounted = false;
   }
 
@@ -91,8 +94,14 @@ export default class ProcessLog extends Component {
       <log
         ref={(log) => this.log = log}
         {...this.props.layout}
-        input // Enables 'keypress'.
-        mouse // This and `keys` enable the user to navigate the logs.
+        // Enables 'keypress' events, for the use of `keys`.
+        input
+        // Pass `keys` to enable the use of the up and down arrow keys to navigate the keyboard.
+        // Note that we do _not_ pass `mouse`, because having blessed scroll will a) break native
+        // text selection https://github.com/chjj/blessed/issues/263 b) be too fast
+        // https://github.com/mixmaxhq/custody/issues/37#issuecomment-390855414. Instead, we disable
+        // blessed's mouse handling while this component is mounted to let the terminal take over
+        // scrolling.
         keys
         focused={this.props.focused}
         scrollback={SCROLLBACK}
