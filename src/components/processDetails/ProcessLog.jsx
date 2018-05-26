@@ -7,7 +7,10 @@ import { statSync } from 'fs';
 // It might be nice to render the entire log file. However this is probably (?) unnecessary and
 // (more to the point) for complex/active services like app, the log file is quite large and, if we
 // try to load it all into the `log` component, can take several seconds to render.
-const SCROLLBACK = 100 /* lines */;
+// We can probably afford a larger scrollback after the logs have grown though:
+// https://github.com/mixmaxhq/custody/issues/49.
+const INITIAL_SCROLLBACK = 100 /* lines */;
+const SCROLLBACK = 1000 /* lines */;
 
 export default class ProcessLog extends Component {
   componentDidMount() {
@@ -57,9 +60,10 @@ export default class ProcessLog extends Component {
       return;
     }
 
-    // As documented on `SCROLLBACK`, we can't render the entire log file. However, the 'tail'
-    // module lacks a `-n`-like option to get the last `SCROLLBACK` lines. So what we do is load the
-    // entire file, but wait to render only the last `SCROLLBACK` lines, then start streaming.
+    // As documented on `INITIAL_SCROLLBACK`, we can't render the entire log file. However, the
+    // 'tail' module lacks a `-n`-like option to get the last `INITIAL_SCROLLBACK` lines. So what we
+    // do is load the entire file, but wait to render only the last `INITIAL_SCROLLBACK` lines, then
+    // start streaming.
     this.tail = new Tail(logfile, { fromBeginning: true });
 
     let logs = [];
@@ -70,7 +74,7 @@ export default class ProcessLog extends Component {
           this.log.add(line);
         } else {
           logs.push(line);
-          if (logs.length > SCROLLBACK) logs.shift();
+          if (logs.length > INITIAL_SCROLLBACK) logs.shift();
         }
       })
       .on('historicalDataEnd', () => {
