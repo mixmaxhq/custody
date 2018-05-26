@@ -23,7 +23,13 @@ const argv = require('yargs')
   .alias('h', 'help')
   .argv;
 
-custody(argv).catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+custody(argv)
+  .then(() => process.exit(0))
+  .catch((err) => {
+    if (err.code === 'ECONNREFUSED') {
+      console.error(`Error: Supervisor is not running on port ${argv.port}.`);
+    } else {
+      console.error(err);
+    }
+    process.exit(1);
+  });

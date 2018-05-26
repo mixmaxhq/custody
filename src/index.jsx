@@ -5,29 +5,36 @@ import {render} from 'react-blessed';
 import screen from '/screen';
 import ProcessMonitor from '/utils/processMonitor/index';
 
-export default async function start({ port, notifications }) {
-  const processMonitor = new ProcessMonitor({ supervisor: { port } }).on('error', (err) => {
+export default function start({ port, notifications }) {
+  return new Promise((resolve, reject) => {
     // TODO(jeff): Distinguish between fatal and non-fatal errors.
-    console.error(err);
-    process.exit(1);
-  });
+    const processMonitor = new ProcessMonitor({ supervisor: { port } }).on('error', reject);
 
-  function renderApp() {
-    render(<Console
-      // HACK(jeff): Deep-clone the processes so that the console can diff changes. Although I'm not
-      // totally sure if this is hacky, like whose responsibility it should be for deep-cloning.
-      processes={cloneDeep(processMonitor.processes)}
-      notifications={notifications}
-    />, screen);
-  }
+    // Load all processes, then render, to avoid a flash as they load in (including probe states).
+    processMonitor.start()
+      .then(() => {
+        function renderApp() {
+          render(<Console
+            // HACK(jeff): Deep-clone the processes so that the console can diff changes. Although I'm not
+            // totally sure if this is hacky, like whose responsibility it should be for deep-cloning.
+            processes={cloneDeep(processMonitor.processes)}
+            notifications={notifications}
+          />, screen);
+        }
+        renderApp();
+        processMonitor.on('update', renderApp);
+      })
+      .catch(reject);
 
-  // Load all processes, then render, to avoid a flash as they load in (including probe states).
-  await processMonitor.start();
-  renderApp();
-  processMonitor.on('update', renderApp);
+    // Don't allow components to lock-out our control keys, Ctrl-C (exit) and F12 (debug log).
+    screen.ignoreLocked = ['C-c', 'f12'];
 
-  screen.key(['C-c'], () => process.exit(0));
-
-  // Don't allow components to lock-out our control keys, Ctrl-C (exit) and F12 (debug log).
-  screen.ignoreLocked = ['C-c', 'f12'];
+    screen.key(['C-c'], () => resolve());
+  })
+    .catch((err) => {
+      // Reset the terminal before returning the error, otherwise the client won't be able to print
+      // the error to the logs.
+      screen.destroy();
+      throw err;
+    });
 }
