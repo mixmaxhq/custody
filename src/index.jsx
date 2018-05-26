@@ -1,9 +1,9 @@
 import cloneDeep from 'lodash.clonedeep';
-import Console from './components/Console';
+import Console from '/components/Console';
 import React from 'react';
 import {render} from 'react-blessed';
-import screen from './screen';
-import ProcessMonitor from './utils/processMonitor';
+import screen from '/screen';
+import ProcessMonitor from '/utils/processMonitor/index';
 
 export default async function start({ port, notifications }) {
   const processMonitor = new ProcessMonitor({ supervisor: { port } }).on('error', (err) => {

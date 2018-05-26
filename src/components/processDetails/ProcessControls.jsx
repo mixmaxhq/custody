@@ -1,7 +1,7 @@
-import { effectiveState, STATES } from '../../utils/process';
+import { effectiveState, STATES } from '/utils/process';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import screen from '../../screen';
+import screen from '/screen';
 
 const ACTIONS = new Map([
   ['r', {
