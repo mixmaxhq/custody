@@ -199,6 +199,10 @@ export default class ProcessTable extends Component {
           }}
           tags // Enables cell content to contain color tags.
           data={tableData(this.state.processes)}
+          // By default blessed scrolls the table two rows on each wheel event
+          // https://github.com/chjj/blessed/pull/183/files#diff-41616b4798f161164091b835a5117734R96
+          // which makes it mad hard to select things.
+          scrollStep={1}
           onKeypress={::this.onKeypress}
           // This event handler is called when the user hits Enter or double-clicks on a row.
           onSelect={::this.onSelect}
