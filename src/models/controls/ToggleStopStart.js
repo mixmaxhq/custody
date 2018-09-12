@@ -1,4 +1,9 @@
+import _ from 'underscore';
 import { effectiveState, STATES } from '/utils/process';
+
+function processIsHalted(process) {
+  return _.contains([STATES.STOPPED, STATES.FATAL], effectiveState(process).state);
+}
 
 export default class ToggleStopStart {
   constructor(process) {
@@ -6,7 +11,7 @@ export default class ToggleStopStart {
   }
 
   get verb() {
-    if (effectiveState(this.process).state === STATES.STOPPED) {
+    if (processIsHalted(this.process)) {
       return 'stop/{underline}start{/}';
     } else {
       return '{underline}stop{/}/start';
@@ -14,7 +19,7 @@ export default class ToggleStopStart {
   }
 
   async toggle() {
-    if (effectiveState(this.process).state === STATES.STOPPED) {
+    if (processIsHalted(this.process)) {
       await this.process.start();
     } else {
       await this.process.stop();
