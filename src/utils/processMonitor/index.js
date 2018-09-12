@@ -88,7 +88,12 @@ export default class ProcessMonitor extends EventEmitter {
         },
         async restart() {
           // There's no "restartProcess" API apparently, boo.
-          await this.stop();
+          try {
+            await this.stop();
+          } catch (e) {
+            // Simpler to just try to stop than to check if it is running.
+            if (e.faultString !== 'NOT_RUNNING') throw e;
+          }
           await this.start();
         }
       });
