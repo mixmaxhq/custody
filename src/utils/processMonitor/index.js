@@ -2,6 +2,7 @@ import _ from 'underscore';
 import { detectPortConflict, clearPortConflict } from '/utils/process';
 import EventEmitter from 'events';
 import ProbeMonitor, { STATES } from './ProbeMonitor';
+import Process from '/models/Process';
 import { promisify } from 'promise-callbacks';
 import supervisord from 'supervisord';
 import screen from '/screen';
@@ -61,41 +62,19 @@ export default class ProcessMonitor extends EventEmitter {
 
   async _updateProcesses() {
     // Note that this coercees `pid` to a string but that appears alright.
-    const previousProcessesById = _.indexBy(this._processes, 'pid');
-    this._processes = await this._supervisor.getAllProcessInfo();
+    const processes = await this._supervisor.getAllProcessInfo();
 
     if (!this._started) {
       // We were stopped after the update timer last fired but before the process fetch finished.
       return;
     }
 
-    // Enhance the processes with various data and methods.
-    this._processes.forEach((process) => {
-      // Merge child state.
+    const previousProcessesById = _.indexBy(this._processes, 'pid');
+    this._processes = processes.map((process) => {
       const previousProcess = previousProcessesById[process.pid];
-      process.childState = previousProcess && previousProcess.childState;
-      process.childDescription = previousProcess && previousProcess.childDescription;
-
-      // Give the processes an object-oriented API for managing their state. Especially handy for
-      // use within components, without a reference to this process monitor.
-      const supervisor = this._supervisor;
-      _.extend(process, {
-        async start() {
-          return supervisor.startProcess(this.name);
-        },
-        async stop() {
-          return supervisor.stopProcess(this.name);
-        },
-        async restart() {
-          // There's no "restartProcess" API apparently, boo.
-          try {
-            await this.stop();
-          } catch (e) {
-            // Simpler to just try to stop than to check if it is running.
-            if (e.faultString !== 'NOT_RUNNING') throw e;
-          }
-          await this.start();
-        }
+      return new Process(process, {
+        previousProcess,
+        supervisor: this._supervisor
       });
     });
 

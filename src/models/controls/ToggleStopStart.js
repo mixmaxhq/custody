@@ -1,8 +1,8 @@
 import _ from 'underscore';
-import { effectiveState, STATES } from '/utils/process';
+import { STATES } from '/models/Process';
 
 function processIsHalted(process) {
-  return _.contains([STATES.STOPPED, STATES.FATAL], effectiveState(process).state);
+  return _.contains([STATES.STOPPED, STATES.FATAL], process.effectiveState.state);
 }
 
 export default class ToggleStopStart {

@@ -1,21 +1,12 @@
 import _ from 'underscore';
-import { displayName, effectiveState } from '/utils/process';
 import fuzzy from 'fuzzy';
+import memoize from 'memoize-one';
 import PropTypes from 'prop-types';
 import React, { Component, Fragment } from 'react';
 import { regexLastIndexOf } from '/utils/string';
+import xor from 'lodash.xor';
 
 export const HEADERS = ['name', 'state', 'description'];
-
-function getDerivedProcessesFromProps({ processes }) {
-  return _.map(processes, (process) => {
-    return {
-      ...process,
-      // Rename the process to mimic `supervisorctl status`.
-      displayName: displayName(process)
-    };
-  });
-}
 
 function filterProcesses(search, processes) {
   return fuzzy.filter(search, processes, {
@@ -24,29 +15,35 @@ function filterProcesses(search, processes) {
     extract: (process) => process.displayName
   }).map((result) => {
     return {
-      ...result.original,
-      // Record the tagged name.
+      process: result.original,
       displayName: result.string
     };
   });
 }
 
-function tableData(processes) {
-  if (_.isEmpty(processes)) return processes;
+function processesAreEqual(listA, listB) {
+  // ???(jeff): Maybe we should do a field-wise comparison here? Wonder how that would compare in
+  // terms of performance and correctness (since we'd be using outdated process objects if we didn't
+  // update).
+  return _.isEmpty(xor(listA, listB));
+}
+
+function tableData(filteredProcesses) {
+  if (_.isEmpty(filteredProcesses)) return filteredProcesses;
 
   return [
     HEADERS,
-    ...processes.map((process) => {
+    ...filteredProcesses.map(({ process, displayName }) => {
       return HEADERS.map((header) => {
         let cellValue;
         switch (header) {
           case 'name':
-            cellValue = process['displayName'];
+            cellValue = displayName;
             break;
           // For state and description, prefer information reported by the child process if available.
           case 'state':
           case 'description':
-            cellValue = effectiveState(process)[header];
+            cellValue = process.effectiveState[header];
             break;
           default:
             cellValue = process[header];
@@ -71,31 +68,28 @@ function cellData(header, value) {
 }
 
 export default class ProcessTable extends Component {
-  // I don't think that react-blessed@0.2.1 supports `getDerivedStateFromProps`, it doesn't automatically
-  // call this. This is too bad since this means we have to derive processes in the constructor and
-  // in `componentWillReceiveProps`. But at least we can mimic the upcoming API.
-  static getDerivedStateFromProps(nextProps, prevState) {
-    return {
-      search: prevState.search,
-      processes: filterProcesses(prevState.search, getDerivedProcessesFromProps(nextProps))
-    };
-  }
-
   constructor(props) {
     super(props);
 
-    this.state = ProcessTable.getDerivedStateFromProps(props, {
-      search: '',
-      processes: []
+    this.filterProcesses = memoize(filterProcesses, (a, b) => {
+      if (_.isArray(a) && _.isArray(b)) {
+        return processesAreEqual(a, b);
+      } else {
+        return a === b;
+      }
     });
+
+    this.state = {
+      search: ''
+    };
   }
 
-  // react-blessed doesn't support `UNSAFE_componentWillReceiveProps` so hopefully this won't stop
-  // working in react@17. :\
-  componentWillReceiveProps() {
-    // ???(jeff): Is `props` equivalent to the argument to `componentWillReceiveProps` here? Which
-    // is appropriate to use?
-    this.setState((prevState, props) => ProcessTable.getDerivedStateFromProps(props, prevState));
+  filteredProcesses(justProcesses = true) {
+    const results = this.filterProcesses(this.state.search, this.props.processes);
+    if (justProcesses) {
+      return _.pluck(results, 'process');
+    }
+    return results;
   }
 
   // I don't think that react-blessed@0.2.1 supports `getSnapshotBeforeUpdate`, that wasn't being
@@ -111,13 +105,13 @@ export default class ProcessTable extends Component {
       // tree with each render call") or blessed's fault (since I'm not sure that react-blessed
       // is responsible for rendering the table rows; react-blessed might have no choice but to call
       // `setData` on the table, which might reset all the items).
-      this.selectedProcess = this.state.processes[this.table.selected - 1];
+      this.selectedProcess = this.filteredProcesses()[this.table.selected - 1];
     }
   }
 
   componentDidUpdate() {
     if (this.selectedProcess) {
-      const processIndex = _.findIndex(this.state.processes, { name: this.selectedProcess.name });
+      const processIndex = _.findIndex(this.filteredProcesses(), { name: this.selectedProcess.name });
       if (processIndex > -1) {
         this.table.select(processIndex + 1); // `selected` is 1-indexed since 0 is the headers.
       }
@@ -130,7 +124,7 @@ export default class ProcessTable extends Component {
     // For 'backspace' and 'enter'/'return', `ch` is some kind of control character though, annoyingly.
     // Also on OS X the enter key emits *two* keypresses in a row, one for 'enter' _and_ 'return'!
     if ((key.name === 'backspace') || (key.full === 'C-u' /* Command-Delete */)) {
-      this.setState((prevState, props) => {
+      this.setState((prevState) => {
         // By default slice off the very last character.
         let terminalIndex = -1;
         if (key.meta) {
@@ -149,16 +143,16 @@ export default class ProcessTable extends Component {
           terminalIndex = 0;
         }
         const newSearch = prevState.search.slice(0, terminalIndex);
-        return ProcessTable.getDerivedStateFromProps(props, { ...prevState, search: newSearch });
+        return { search: newSearch };
       });
 
     } else if (key.full === 'escape') {
-      this.setState(ProcessTable.getDerivedStateFromProps(this.props, { ...this.state, search: '' }));
+      this.setState({ search: '' });
 
     } else if (ch && !_.contains(['enter', 'return'], key.name)) {
-      this.setState((prevState, props) => {
+      this.setState((prevState) => {
         const newSearch = prevState.search + ch;
-        return ProcessTable.getDerivedStateFromProps(props, { ...prevState, search: newSearch });
+        return { search: newSearch };
       });
     }
   }
@@ -168,12 +162,12 @@ export default class ProcessTable extends Component {
 
     // The table is 1-indexed.
     const index = _.last(args);
-    this.props.onSelect(this.state.processes[index - 1]);
+    this.props.onSelect(this.filteredProcesses()[index - 1]);
   }
 
   onSelectItem(...args) {
     const index = _.last(args);
-    if ((index === 0) && !_.isEmpty(this.state.processes)) {
+    if ((index === 0) && !_.isEmpty(this.filteredProcesses())) {
       // When using the mouse to scroll, blessed lets the scroll go off the top of the table, as
       // represented by the headers (at position 0) being selected (even though they don't show as
       // selected). Prevent this.
@@ -198,7 +192,7 @@ export default class ProcessTable extends Component {
             header: { bold: true }
           }}
           tags // Enables cell content to contain color tags.
-          data={tableData(this.state.processes)}
+          data={tableData(this.filteredProcesses(false /* justProcesses */))}
           // By default blessed scrolls the table two rows on each wheel event
           // https://github.com/chjj/blessed/pull/183/files#diff-41616b4798f161164091b835a5117734R96
           // which makes it mad hard to select things.
