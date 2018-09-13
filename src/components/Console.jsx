@@ -1,5 +1,4 @@
 import _ from 'underscore';
-import { effectiveState } from '/utils/process';
 import { promisify } from 'promise-callbacks';
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
@@ -7,7 +6,7 @@ import notifier from 'node-notifier';
 import ProcessDetails from './processDetails';
 import ProcessTable from './ProcessTable';
 import screen from '/screen';
-import { STATES } from '/utils/process';
+import { STATES } from '/models/Process';
 
 const exec = promisify(require('child_process').exec);
 
@@ -18,8 +17,8 @@ function processHasChangedState(prevProps) {
     // New processes don't count as having *changed* state.
     if (!previousProcess) return false;
 
-    const { state: currentState } = effectiveState(process);
-    const { state: previousState } = effectiveState(previousProcess);
+    const { state: currentState } = process.effectiveState;
+    const { state: previousState } = previousProcess.effectiveState;
     return (currentState !== previousState);
   };
 }
@@ -56,7 +55,7 @@ export default class Console extends Component {
   }
 
   notifyOfProcessChange(process) {
-    const { state, description } = effectiveState(process);
+    const { state, description } = process.effectiveState;
 
     // Don't display a notification if the process is starting since it'll immediately transition
     // to another state.

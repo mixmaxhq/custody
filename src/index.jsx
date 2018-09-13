@@ -1,4 +1,3 @@
-import cloneDeep from 'lodash.clonedeep';
 import Console from '/components/Console';
 import React from 'react';
 import {render} from 'react-blessed';
@@ -15,9 +14,7 @@ export default function start({ port, notifications }) {
       .then(() => {
         function renderApp() {
           render(<Console
-            // HACK(jeff): Deep-clone the processes so that the console can diff changes. Although I'm not
-            // totally sure if this is hacky, like whose responsibility it should be for deep-cloning.
-            processes={cloneDeep(processMonitor.processes)}
+            processes={processMonitor.processes}
             notifications={notifications}
           />, screen);
         }
