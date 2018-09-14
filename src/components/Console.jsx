@@ -6,7 +6,9 @@ import notifier from 'node-notifier';
 import ProcessDetails from './processDetails';
 import ProcessTable from './ProcessTable';
 import screen from '/screen';
+import { shutdownCleanly } from '/shutdownTracking';
 import { STATES } from '/models/Process';
+import { load, store } from '/utils/storage';
 
 const exec = promisify(require('child_process').exec);
 
@@ -32,6 +34,36 @@ export default class Console extends Component {
     };
   }
 
+  componentDidMount() {
+    // Restore the last-selected process when we load, if we didn't cleanly shut down.
+    // Perhaps at some later point we will wish to always restore the last-selected process.
+    if (shutdownCleanly()) {
+      // If we did shutdown cleanly, clear the selected process so as to not restore it if/when
+      // next we crash.
+      store('selectedProcess', null);
+      return;
+    }
+
+    // HACK(jeff): This could theoretically return before the Console had been initialized with any
+    // processes. However we wait to render it until we have the processes.
+    load('selectedProcess')
+      .then((selectedProcessName) => {
+        // If the user has already selected a process, don't override that.
+        if (this.state.selectedProcess) return;
+
+        // If the user had not selected a process, ignore.
+        if (!selectedProcessName) return;
+
+        const selectedProcess = _.findWhere(this.props.processes, {
+          name: selectedProcessName
+        });
+        if (selectedProcess) this.setState({ selectedProcess });
+      })
+      .catch(() => {
+        // Ignore failures to load the selected process, it's a nicety to restore it.
+      });
+  }
+
   // I don't think that react-blessed@0.2.1 supports `getDerivedStateFromProps`, that wasn't being
   // called. react-blessed doesn't support `UNSAFE_componentWillReceiveProps` either so hopefully
   // this won't stop working in react@17. :\
@@ -46,12 +78,18 @@ export default class Console extends Component {
     });
   }
 
-  componentDidUpdate(prevProps) {
-    if (!this.props.notifications) return;
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.selectedProcess !== prevState.selectedProcess) {
+      // Only store the selected process if it actually changed, to avoid blowing away the value
+      // in response to another change.
+      store('selectedProcess', this.state.selectedProcess && this.state.selectedProcess.name);
+    }
 
-    this.props.processes
-      .filter(processHasChangedState(prevProps))
-      .forEach(::this.notifyOfProcessChange);
+    if (this.props.notifications) {
+      this.props.processes
+        .filter(processHasChangedState(prevProps))
+        .forEach(::this.notifyOfProcessChange);
+    }
   }
 
   notifyOfProcessChange(process) {
