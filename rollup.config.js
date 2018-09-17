@@ -6,7 +6,7 @@ const pkg = require('./package.json');
 
 export default {
   input: 'src/index.jsx',
-  external: ['events', 'fs', 'path', ...Object.keys(pkg['dependencies'])],
+  external: ['events', 'fs', 'path', 'v8', ...Object.keys(pkg['dependencies'])],
   plugins: [
     rootImport({
       root: [`${__dirname}/src`],

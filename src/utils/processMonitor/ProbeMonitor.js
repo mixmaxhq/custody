@@ -2,13 +2,14 @@ import EventEmitter from 'events';
 import { basename, join as joinPath } from 'path';
 import { promisify } from 'promise-callbacks';
 import { STATES } from '/models/Process';
+import { storagePath } from '/utils/storage';
 import { watch } from 'fs';
 
 const { readFile, readdir, unlink } = promisify.methods(require('fs'), ['readFile', 'readdir', 'unlink']);
 const mkdirp = promisify(require('mkdirp'));
 
 // Keep these values in sync with those inside `custody-probe`.
-const PROC_DIR = '/usr/local/var/custody/services';
+const PROC_DIR = storagePath('services');
 const STATEFILE_EXT = '.statefile';
 export { STATES }; // Re-use process states for the probes.
 
