@@ -1,5 +1,7 @@
 ## Release History
 
+* 0.2.3 Fixes for restarting processes (#66, #67, #68), workaround for OOM issue (#69)
+
 * 0.2.2 Fix some crashes, support copying text from logs, turn down scroll sensitivity, increase log scrollback
 
 * 0.2.1 Restart the process if Supervisor has lost its logfile (#36)
