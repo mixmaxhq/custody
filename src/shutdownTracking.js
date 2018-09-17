@@ -9,7 +9,7 @@ let wasCleanShutdown;
  * @return {Boolean} `true` if `markCleanShutdown` was called before the process last shut down,
  *   `false` otherwise.
  */
-export function shutdownCleanly() {
+export function didShutdownCleanly() {
   if (wasCleanShutdown !== undefined) return wasCleanShutdown;
 
   try {
@@ -28,7 +28,7 @@ export function shutdownCleanly() {
 }
 
 /**
- * Causes `shutdownCleanly` to return `true` the next time the process is launched.
+ * Causes `didShutdownCleanly` to return `true` the next time the process is launched.
  */
 export function markCleanShutdown() {
   writeFileSync(SHUTDOWN_FILE, '');
@@ -36,12 +36,12 @@ export function markCleanShutdown() {
 
 /**
  * Clears the last-recorded shutdown value to prepare to call `markCleanShutdown` again.
- * `shutdownCleanly` will continue to return the last-recorded shutdown value for the lifetime of
+ * `didShutdownCleanly` will continue to return the last-recorded shutdown value for the lifetime of
  * the process.
  */
 export function clearShutdown() {
   // Make sure to load the last shutdown before we clear it.
-  shutdownCleanly();
+  didShutdownCleanly();
 
   try {
     unlinkSync(SHUTDOWN_FILE);

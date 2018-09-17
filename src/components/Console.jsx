@@ -6,7 +6,7 @@ import notifier from 'node-notifier';
 import ProcessDetails from './processDetails';
 import ProcessTable from './ProcessTable';
 import screen from '/screen';
-import { shutdownCleanly } from '/shutdownTracking';
+import { didShutdownCleanly } from '/shutdownTracking';
 import { STATES } from '/models/Process';
 import { load, store } from '/utils/storage';
 
@@ -37,7 +37,7 @@ export default class Console extends Component {
   componentDidMount() {
     // Restore the last-selected process when we load, if we didn't cleanly shut down.
     // Perhaps at some later point we will wish to always restore the last-selected process.
-    if (shutdownCleanly()) {
+    if (didShutdownCleanly()) {
       // If we did shutdown cleanly, clear the selected process so as to not restore it if/when
       // next we crash.
       store('selectedProcess', null);
