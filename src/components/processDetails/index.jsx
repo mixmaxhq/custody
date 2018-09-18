@@ -8,7 +8,7 @@ const DEFAULT_CONTROLS = [
   ['Esc', {
     verb: 'go back',
     toggle() {
-      // Nothing to do since we already handle escape above.
+      // Nothing to do since we already handle escape in `onElementKeypress` below.
     }
   }]
 ];
