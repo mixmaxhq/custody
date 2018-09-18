@@ -4,6 +4,15 @@ import Log from './ProcessLog';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
+const DEFAULT_CONTROLS = [
+  ['Esc', {
+    verb: 'go back',
+    toggle() {
+      // Nothing to do since we already handle escape in `onElementKeypress` below.
+    }
+  }]
+];
+
 export default class ProcessDetails extends Component {
   componentDidMount() {
     // The log has to be focused--not our root element--in order to enable keyboard navigation
@@ -30,20 +39,12 @@ export default class ProcessDetails extends Component {
           process={this.props.process}
           focused
           /* HACK(jeff): `top` === the `height` of `Summary`. */
-          layout={{ top: 1, height: '100%-3' }}
+          layout={{ top: 1 }}
         />
         <Controls
           ref={(controls) => this.controls = controls}
           process={this.props.process}
-          layout={{ top: '100%-2' }}
-          controls={[
-            ['Esc', {
-              verb: 'go back',
-              toggle() {
-                // Nothing to do since we already handle escape above.
-              }
-            }]
-          ]}
+          controls={DEFAULT_CONTROLS}
         />
       </box>
     );
