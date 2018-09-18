@@ -1,5 +1,7 @@
 ## Release History
 
+* 0.3.1 Build on local installation as well as on publishing (#71)
+
 * 0.3.0 Float the process controls over the logs (#70)
 
 * 0.2.3 Fixes for restarting processes (#66, #67, #68), workaround for OOM issue (#69)
