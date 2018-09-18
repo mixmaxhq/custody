@@ -38,7 +38,9 @@ export default class ProcessControls extends Component {
     // HACK(jeff): We don't know for sure that the control manipulates the process.
     // But it's a fair bet.
     const process = this.props.process;
-    control.toggle().catch((err) => {
+
+    // `Promise.resolve` the result of `toggle` to support both synchronous and asynchronous actions.
+    Promise.resolve(control.toggle()).catch((err) => {
       screen.debug(`Could not ${control.verb} ${process.name}:`, err);
     });
   }
