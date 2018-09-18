@@ -14,7 +14,8 @@
   "scripts": {
     "start": "bin/custody-cli.js",
     "build": "[ \"$WATCH\" == 'true' ] && rollup -cw || rollup -c",
-    "watch": "WATCH=true npm run build"
+    "watch": "WATCH=true npm run build",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "babel-plugin-external-helpers": "^6.22.0",
