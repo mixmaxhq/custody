@@ -1,19 +1,36 @@
-import Controls from './ProcessControls';
-import Summary from './ProcessSummary';
+import CommandMenu from '/components/CommandMenu';
+import memoize from 'memoize-one';
 import Log from './ProcessLog';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import Restart from '/models/commands/Restart';
+import Summary from './ProcessSummary';
+import ToggleStopStart from '/models/commands/ToggleStopStart';
 
-const DEFAULT_CONTROLS = [
-  ['Esc', {
-    verb: 'go back',
-    toggle() {
-      // Nothing to do since we already handle escape in `onElementKeypress` below.
-    }
-  }]
-];
+function getCommands(process) {
+  return [
+    ['r', new Restart(process)],
+    ['s', new ToggleStopStart(process)],
+    ['Esc', {
+      verb: 'go back',
+      toggle() {
+        // Nothing to do since we already handle escape in `onElementKeypress` below.
+      }
+    }]
+  ];
+}
 
 export default class ProcessDetails extends Component {
+  constructor(props) {
+    super(props);
+
+    this.commandGetter = memoize(getCommands);
+  }
+
+  get commands() {
+    return this.commandGetter(this.props.process);
+  }
+
   componentDidMount() {
     // The log has to be focused--not our root element--in order to enable keyboard navigation
     // thereof. But then this means that we have to listen for the log's keypress events, using the
@@ -26,8 +43,8 @@ export default class ProcessDetails extends Component {
     if (key.name === 'escape') {
       this.props.onClose();
     } else {
-      // Forward keypresses to the controls since we have to keep the log focused.
-      this.controls.onKeypress(ch, key);
+      // Forward keypresses to the command menu since we have to keep the log focused.
+      this.commandMenu.onKeypress(ch, key);
     }
   }
 
@@ -41,10 +58,9 @@ export default class ProcessDetails extends Component {
           /* HACK(jeff): `top` === the `height` of `Summary`. */
           layout={{ top: 1 }}
         />
-        <Controls
-          ref={(controls) => this.controls = controls}
-          process={this.props.process}
-          controls={DEFAULT_CONTROLS}
+        <CommandMenu
+          ref={(menu) => this.commandMenu = menu}
+          commands={this.commands}
         />
       </box>
     );
