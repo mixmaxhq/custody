@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import FileLog from './FileLog';
 import { promisify } from 'promise-callbacks';
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
@@ -30,11 +31,18 @@ export default class Console extends Component {
     super(props);
 
     this.state = {
+      tailingMainLogfile: false,
       selectedProcess: null
     };
   }
 
   componentDidMount() {
+    // Our various children have to be focused--not our root element--in order to enable keyboard
+    // navigation thereof. But then this means that we have to listen for the children's keypress
+    // events, using the special bubbling syntax https://github.com/chjj/blessed#event-bubbling, and
+    // have to do so manually (ugh): https://github.com/Yomguithereal/react-blessed/issues/61
+    this.el.on('element keypress', ::this.onElementKeypress);
+
     // Restore the last-selected process when we load, if we didn't cleanly shut down.
     // Perhaps at some later point we will wish to always restore the last-selected process.
     if (didShutdownCleanly()) {
@@ -62,6 +70,12 @@ export default class Console extends Component {
       .catch(() => {
         // Ignore failures to load the selected process, it's a nicety to restore it.
       });
+  }
+
+  onElementKeypress(el, ch, key) {
+    if (key.name === 'tab') {
+      this.setState(({ tailingMainLogfile }) => ({ tailingMainLogfile: !tailingMainLogfile }));
+    }
   }
 
   // I don't think that react-blessed@0.2.1 supports `getDerivedStateFromProps`, that wasn't being
@@ -132,20 +146,31 @@ export default class Console extends Component {
 
   render() {
     return (
-      this.state.selectedProcess ?
-        <ProcessDetails
-          process={this.state.selectedProcess}
-          onClose={::this.onDeselect}
-        /> :
-        <ProcessTable
-          processes={this.props.processes}
-          onSelect={::this.onSelect}
-        />
+      <box ref={(el) => this.el = el} >
+        {this.state.tailingMainLogfile ?
+          <FileLog
+            logfile={this.props.mainLogfile}
+            focused={true}
+          />
+          :
+          (this.state.selectedProcess ?
+            <ProcessDetails
+              process={this.state.selectedProcess}
+              onClose={::this.onDeselect}
+            />
+            :
+            <ProcessTable
+              processes={this.props.processes}
+              onSelect={::this.onSelect}
+            />
+          )}
+      </box>
     );
   }
 }
 
 Console.propTypes = {
+  mainLogfile: PropTypes.string.isRequired,
   processes: PropTypes.array.isRequired,
   notifications: PropTypes.bool
 };
