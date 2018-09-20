@@ -1,4 +1,3 @@
-import CommandMenu from '/components/CommandMenu';
 import memoize from 'memoize-one';
 import Log from './ProcessLog';
 import PropTypes from 'prop-types';
@@ -6,6 +5,8 @@ import React, { Component } from 'react';
 import Restart from '/models/commands/Restart';
 import Summary from './ProcessSummary';
 import ToggleStopStart from '/models/commands/ToggleStopStart';
+
+const COMMAND_SET_NAME = 'process-details';
 
 function getCommands(process) {
   return [
@@ -32,6 +33,8 @@ export default class ProcessDetails extends Component {
   }
 
   componentDidMount() {
+    this.context.addCommandSet(COMMAND_SET_NAME, this.commands);
+
     // The log has to be focused--not our root element--in order to enable keyboard navigation
     // thereof. But then this means that we have to listen for the log's keypress events, using the
     // special bubbling syntax https://github.com/chjj/blessed#event-bubbling, and have to do so
@@ -39,12 +42,19 @@ export default class ProcessDetails extends Component {
     this.el.on('element keypress', ::this.onElementKeypress);
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.process !== prevProps.process) {
+      this.context.addCommandSet(COMMAND_SET_NAME, this.commands);
+    }
+  }
+
+  componentWillUnmount() {
+    this.context.removeCommandSet(COMMAND_SET_NAME);
+  }
+
   onElementKeypress(el, ch, key) {
     if (key.name === 'escape') {
       this.props.onClose();
-    } else {
-      // Forward keypresses to the command menu since we have to keep the log focused.
-      this.commandMenu.onKeypress(ch, key);
     }
   }
 
@@ -58,10 +68,6 @@ export default class ProcessDetails extends Component {
           /* HACK(jeff): `top` === the `height` of `Summary`. */
           layout={{ top: 1 }}
         />
-        <CommandMenu
-          ref={(menu) => this.commandMenu = menu}
-          commands={this.commands}
-        />
       </box>
     );
   }
@@ -70,4 +76,9 @@ export default class ProcessDetails extends Component {
 ProcessDetails.propTypes = {
   process: PropTypes.object.isRequired,
   onClose: PropTypes.func
+};
+
+ProcessDetails.contextTypes = {
+  addCommandSet: PropTypes.func.isRequired,
+  removeCommandSet: PropTypes.func.isRequired
 };

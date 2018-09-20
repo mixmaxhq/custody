@@ -149,7 +149,9 @@ export default class ProcessTable extends Component {
     } else if (key.full === 'escape') {
       this.setState({ search: '' });
 
-    } else if (ch && !_.contains(['enter', 'return'], key.name)) {
+    } else if (ch &&
+      this.props.shouldHandleKeypress(ch, key) && !_.contains(['enter', 'return'], key.name)) {
+
       this.setState((prevState) => {
         const newSearch = prevState.search + ch;
         return { search: newSearch };
@@ -213,5 +215,10 @@ export default class ProcessTable extends Component {
 
 ProcessTable.propTypes = {
   processes: PropTypes.array.isRequired,
-  onSelect: PropTypes.func
+  onSelect: PropTypes.func,
+  shouldHandleKeypress: PropTypes.func
+};
+
+ProcessTable.defaultProps = {
+  shouldHandleKeypress: () => true
 };
