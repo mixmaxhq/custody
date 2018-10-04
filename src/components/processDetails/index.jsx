@@ -1,20 +1,40 @@
-import Controls from './ProcessControls';
-import Summary from './ProcessSummary';
+import memoize from 'memoize-one';
 import Log from './ProcessLog';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import Restart from '/models/commands/Restart';
+import Summary from './ProcessSummary';
+import ToggleStopStart from '/models/commands/ToggleStopStart';
 
-const DEFAULT_CONTROLS = [
-  ['Esc', {
-    verb: 'go back',
-    toggle() {
-      // Nothing to do since we already handle escape in `onElementKeypress` below.
-    }
-  }]
-];
+const COMMAND_SET_NAME = 'process-details';
+
+function getCommands(process) {
+  return [
+    ['r', new Restart(process)],
+    ['s', new ToggleStopStart(process)],
+    ['Esc', {
+      verb: 'go back',
+      toggle() {
+        // Nothing to do since we already handle escape in `onElementKeypress` below.
+      }
+    }]
+  ];
+}
 
 export default class ProcessDetails extends Component {
+  constructor(props) {
+    super(props);
+
+    this.commandGetter = memoize(getCommands);
+  }
+
+  get commands() {
+    return this.commandGetter(this.props.process);
+  }
+
   componentDidMount() {
+    this.context.addCommandSet(COMMAND_SET_NAME, this.commands);
+
     // The log has to be focused--not our root element--in order to enable keyboard navigation
     // thereof. But then this means that we have to listen for the log's keypress events, using the
     // special bubbling syntax https://github.com/chjj/blessed#event-bubbling, and have to do so
@@ -22,12 +42,19 @@ export default class ProcessDetails extends Component {
     this.el.on('element keypress', ::this.onElementKeypress);
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.process !== prevProps.process) {
+      this.context.addCommandSet(COMMAND_SET_NAME, this.commands);
+    }
+  }
+
+  componentWillUnmount() {
+    this.context.removeCommandSet(COMMAND_SET_NAME);
+  }
+
   onElementKeypress(el, ch, key) {
     if (key.name === 'escape') {
       this.props.onClose();
-    } else {
-      // Forward keypresses to the controls since we have to keep the log focused.
-      this.controls.onKeypress(ch, key);
     }
   }
 
@@ -41,11 +68,6 @@ export default class ProcessDetails extends Component {
           /* HACK(jeff): `top` === the `height` of `Summary`. */
           layout={{ top: 1 }}
         />
-        <Controls
-          ref={(controls) => this.controls = controls}
-          process={this.props.process}
-          controls={DEFAULT_CONTROLS}
-        />
       </box>
     );
   }
@@ -54,4 +76,9 @@ export default class ProcessDetails extends Component {
 ProcessDetails.propTypes = {
   process: PropTypes.object.isRequired,
   onClose: PropTypes.func
+};
+
+ProcessDetails.contextTypes = {
+  addCommandSet: PropTypes.func.isRequired,
+  removeCommandSet: PropTypes.func.isRequired
 };

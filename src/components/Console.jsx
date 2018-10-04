@@ -1,4 +1,7 @@
 import _ from 'underscore';
+import CommandMenu from '/components/commandMenu/index';
+import commands, {addCommandSet, removeCommandSet} from '/components/commandMenu/commands';
+import FileLog from './FileLog';
 import { promisify } from 'promise-callbacks';
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
@@ -25,16 +28,66 @@ function processHasChangedState(prevProps) {
   };
 }
 
+const COMMAND_SET_NAME = 'console';
+
+function getCommandSet(component) {
+  let maintailDescription;
+  if (component.state.tailingMainLogfile) {
+    maintailDescription = 'switch to/{underline}from{/} maintail';
+  } else {
+    maintailDescription = 'switch {underline}to{/}/from maintail';
+  }
+
+  return [
+    ['tab', {
+      verb: maintailDescription,
+      toggle() {
+        component.setState(({ tailingMainLogfile }) => ({ tailingMainLogfile: !tailingMainLogfile }));
+      }
+    }]
+  ];
+}
+
 export default class Console extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      selectedProcess: null
+      tailingMainLogfile: false,
+      selectedProcess: null,
+      commands
     };
   }
 
+  /**
+   * Permit child components to add/remove command sets, and re-render the command menu when they
+   * do so.
+   */
+  getChildContext() {
+    return {
+      commands: this.state.commands,
+      addCommandSet: ::this.addCommandSet,
+      removeCommandSet: ::this.removeCommandSet
+    };
+  }
+
+  addCommandSet(name, commands) {
+    this.setState({commands: addCommandSet(name, commands)});
+  }
+
+  removeCommandSet(name) {
+    this.setState({commands: removeCommandSet(name)});
+  }
+
   componentDidMount() {
+    this.addCommandSet(COMMAND_SET_NAME, getCommandSet(this));
+
+    // Our various children have to be focused--not our root element--in order to enable keyboard
+    // navigation thereof. But then this means that we have to listen for the children's keypress
+    // events, using the special bubbling syntax https://github.com/chjj/blessed#event-bubbling, and
+    // have to do so manually (ugh): https://github.com/Yomguithereal/react-blessed/issues/61
+    this.el.on('element keypress', ::this.onElementKeypress);
+
     // Restore the last-selected process when we load, if we didn't cleanly shut down.
     // Perhaps at some later point we will wish to always restore the last-selected process.
     if (didShutdownCleanly()) {
@@ -64,6 +117,21 @@ export default class Console extends Component {
       });
   }
 
+  componentWillUnmount() {
+    this.removeCommandSet(COMMAND_SET_NAME);
+  }
+
+  // Whatever keys we handle here, should also be withheld from the process table in
+  // `tableShouldHandleKeypress` below.
+  onElementKeypress(el, ch, key) {
+    // Forward keypresses to the command menu since we have to keep our various children focused.
+    this.commandMenu.onKeypress(key);
+  }
+
+  tableShouldHandleKeypress(ch, key) {
+    return !this.commandMenu.willHandleKeypress(key);
+  }
+
   // I don't think that react-blessed@0.2.1 supports `getDerivedStateFromProps`, that wasn't being
   // called. react-blessed doesn't support `UNSAFE_componentWillReceiveProps` either so hopefully
   // this won't stop working in react@17. :\
@@ -89,6 +157,10 @@ export default class Console extends Component {
       this.props.processes
         .filter(processHasChangedState(prevProps))
         .forEach(::this.notifyOfProcessChange);
+    }
+
+    if (this.state.tailingMainLogfile !== prevState.tailingMainLogfile) {
+      this.addCommandSet(COMMAND_SET_NAME, getCommandSet(this));
     }
   }
 
@@ -132,24 +204,45 @@ export default class Console extends Component {
 
   render() {
     return (
-      this.state.selectedProcess ?
-        <ProcessDetails
-          process={this.state.selectedProcess}
-          onClose={::this.onDeselect}
-        /> :
-        <ProcessTable
-          processes={this.props.processes}
-          onSelect={::this.onSelect}
+      <box ref={(el) => this.el = el} >
+        {this.state.tailingMainLogfile ?
+          <FileLog
+            logfile={this.props.mainLogfile}
+            focused={true}
+          />
+          :
+          (this.state.selectedProcess ?
+            <ProcessDetails
+              process={this.state.selectedProcess}
+              onClose={::this.onDeselect}
+            />
+            :
+            <ProcessTable
+              processes={this.props.processes}
+              onSelect={::this.onSelect}
+              shouldHandleKeypress={::this.tableShouldHandleKeypress}
+            />
+          )}
+        <CommandMenu
+          ref={(menu) => this.commandMenu = menu}
         />
+      </box>
     );
   }
 }
 
 Console.propTypes = {
+  mainLogfile: PropTypes.string.isRequired,
   processes: PropTypes.array.isRequired,
   notifications: PropTypes.bool
 };
 
 Console.defaultProps = {
   notifications: false
+};
+
+Console.childContextTypes = {
+  commands: PropTypes.array,
+  addCommandSet: PropTypes.func.isRequired,
+  removeCommandSet: PropTypes.func.isRequired
 };

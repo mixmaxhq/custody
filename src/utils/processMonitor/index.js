@@ -3,17 +3,15 @@ import { detectPortConflict, clearPortConflict } from '/utils/process';
 import EventEmitter from 'events';
 import ProbeMonitor, { STATES } from './ProbeMonitor';
 import Process from '/models/Process';
-import { promisify } from 'promise-callbacks';
-import supervisord from 'supervisord';
 import screen from '/screen';
 
 export default class ProcessMonitor extends EventEmitter {
   constructor({
     supervisor: {
-      port,
-      pollInterval = 1000,
-      fixPortConflicts = true
-    }
+      client,
+      pollInterval = 1000
+    },
+    fixPortConflicts = true
   }) {
     super();
 
@@ -22,9 +20,7 @@ export default class ProcessMonitor extends EventEmitter {
     this._pollInterval = pollInterval;
     this._fixPortConflicts = fixPortConflicts;
 
-    // TODO(jeff): Log connection errors here; for some reason this crashes the process without even
-    // an uncaught exception.
-    this._supervisor = promisify.all(supervisord.connect(`http://localhost:${port}`));
+    this._supervisor = client;
 
     this._probeMonitor = new ProbeMonitor()
       .on('update', ::this._onProcessUpdate)
