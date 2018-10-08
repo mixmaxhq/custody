@@ -1,5 +1,7 @@
 ## Release History
 
+* 0.5.0 Support `CUSTODY_PROC_DIR` variable
+
 * 0.4.0 Add support for displaying maintail output #72
 
 * 0.3.1 Build on local installation as well as on publishing (#71)
