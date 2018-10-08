@@ -22,6 +22,10 @@ individual services' logs with _minimum keystrokes_.
 npm install -g custody-cli
 ```
 
+## Configuration
+
+By default, custody uses `/usr/local/var/custody` to store information and to enable [probe](https://github.com/mixmaxhq/custody-probe)->custody communication. You can override this directory by specifying the `CUSTODY_PROC_DIR` environment variable.
+
 ## Usage
 
 Make sure that Supervisor is running. Then run
