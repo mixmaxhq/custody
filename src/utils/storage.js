@@ -7,7 +7,7 @@ const { readFile, writeFile } = promisify.methods(require('fs'), ['readFile', 'w
 const mkdirp = promisify(require('mkdirp'));
 
 // POSIX-only, but no one's using this on Windows yet.
-const STORAGE_ROOT_DIR = '/usr/local/var/custody';
+const STORAGE_ROOT_DIR = process.env.CUSTODY_PROC_DIR || '/usr/local/var/custody';
 
 /**
  * Returns the absolute path of a file or directory that can be used to store persistent data
