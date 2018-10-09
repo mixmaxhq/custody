@@ -1,21 +1,16 @@
 import _ from 'underscore';
+import {getWorkingDirectory} from '/utils/process';
 
 /**
  * States of a process' lifecycle.
+ *
+ * Re-exported from another module to avoid a circular dependency between this and
+ * `/utils/process`.
+ * TODO(jeff): Move back here once we factor port-conflict detection into a plugin:
+ * https://github.com/mixmaxhq/custody/issues/63
  */
-export const STATES = {
-  // The process is starting up.
-  STARTING: 'STARTING',
-
-  // The process is running.
-  RUNNING: 'RUNNING',
-
-  // The process has been stopped.
-  STOPPED: 'STOPPED',
-
-  // The process has exited with an error and will not be restarted.
-  FATAL: 'FATAL'
-};
+import STATES from './states';
+export { STATES };
 
 export default class Process {
   /**
@@ -85,6 +80,13 @@ export default class Process {
    */
   get daemonName() {
     return (this.group === this.name) ? this.name : `${this.group}:${this.name}`;
+  }
+
+  /**
+   * @return {Promise<String>} The working directory of the process.
+   */
+  async getWorkingDirectory() {
+    return getWorkingDirectory(this.pid);
   }
 
   async start() {

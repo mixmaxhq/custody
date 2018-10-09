@@ -10,7 +10,7 @@ import ProcessDetails from './processDetails';
 import ProcessTable from './ProcessTable';
 import screen from '/screen';
 import { didShutdownCleanly } from '/shutdownTracking';
-import { STATES } from '/models/Process';
+import { STATES } from '/models/Process/index';
 import { load, store } from '/utils/storage';
 
 const exec = promisify(require('child_process').exec);

@@ -1,7 +1,7 @@
 import EventEmitter from 'events';
 import { basename, join as joinPath } from 'path';
 import { promisify } from 'promise-callbacks';
-import { STATES } from '/models/Process';
+import { STATES } from '/models/Process/index';
 import { storagePath } from '/utils/storage';
 import { watch } from 'fs';
 

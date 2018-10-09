@@ -1,6 +1,6 @@
 import _ from 'underscore';
 import { promisify } from 'promise-callbacks';
-import { STATES } from '/models/Process';
+import STATES from '/models/Process/states';
 
 const exec = promisify(require('child_process').exec);
 

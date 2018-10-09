@@ -2,7 +2,7 @@ import _ from 'underscore';
 import { detectPortConflict, clearPortConflict } from '/utils/process';
 import EventEmitter from 'events';
 import ProbeMonitor, { STATES } from './ProbeMonitor';
-import Process from '/models/Process';
+import Process from '/models/Process/index';
 import screen from '/screen';
 
 export default class ProcessMonitor extends EventEmitter {
