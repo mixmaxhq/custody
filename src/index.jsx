@@ -1,6 +1,7 @@
 import { clearShutdown, markCleanShutdown } from '/shutdownTracking';
 import { createClient as createSupervisor, getMainLogfile } from '/utils/supervisor';
 import Console from '/components/Console';
+import {loadPlugins} from '/registry';
 import restartApproachingOOM from '/oomWorkaround';
 import ProcessMonitor from '/utils/processMonitor/index';
 import React from 'react';
@@ -17,6 +18,8 @@ export default async function start({ port, notifications }) {
 
   try {
     clearShutdown();
+
+    await loadPlugins();
 
     stopOOMCheck = restartApproachingOOM();
 

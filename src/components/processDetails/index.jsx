@@ -1,5 +1,7 @@
+import _ from 'underscore';
 import memoize from 'memoize-one';
 import Log from './ProcessLog';
+import {plugins} from '/registry';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Restart from '/models/commands/Restart';
@@ -12,6 +14,9 @@ function getCommands(process) {
   return [
     ['r', new Restart(process)],
     ['s', new ToggleStopStart(process)],
+
+    ..._.flatten(_.invoke(plugins, 'commands', process), true /* shallow */),
+
     ['Esc', {
       verb: 'go back',
       toggle() {
