@@ -39,7 +39,7 @@ export async function loadPlugins() {
 
     const pluginPath = joinPath(pluginRoot, name);
     const schema = require(pluginPath)(custody);
-    return new Plugin(schema, pluginOpts);
+    return new Plugin(name, schema, pluginOpts);
   });
 }
 

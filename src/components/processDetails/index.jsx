@@ -10,12 +10,15 @@ import ToggleStopStart from '/models/commands/ToggleStopStart';
 
 const COMMAND_SET_NAME = 'process-details';
 
-function getCommands(process) {
+const getCommands = (updateCommands) => (process) => {
   return [
     ['r', new Restart(process)],
     ['s', new ToggleStopStart(process)],
 
-    ..._.flatten(_.invoke(plugins, 'commands', process), true /* shallow */),
+    ..._.chain(plugins)
+      .invoke('commands', process, updateCommands)
+      .flatten(true /* shallow */)
+      .value(),
 
     ['Esc', {
       verb: 'go back',
@@ -24,21 +27,35 @@ function getCommands(process) {
       }
     }]
   ];
-}
+};
 
 export default class ProcessDetails extends Component {
-  constructor(props) {
-    super(props);
-
-    this.commandGetter = memoize(getCommands);
-  }
-
   get commands() {
+    if (!this.commandGetter) {
+      const updateCommands = () => {
+        if (!this._isMounted) return;
+
+        // Force the update since the process isn't changing, but the plugin response is.
+        this.updateCommands({force: true});
+      };
+      this.commandGetter = memoize(getCommands(updateCommands));
+    }
+
     return this.commandGetter(this.props.process);
   }
 
-  componentDidMount() {
+  updateCommands({force = false} = {}) {
+    if (force) {
+      // Bust our cache.
+      this.commandGetter = null;
+    }
     this.context.addCommandSet(COMMAND_SET_NAME, this.commands);
+  }
+
+  componentDidMount() {
+    this._isMounted = true;
+
+    this.updateCommands();
 
     // The log has to be focused--not our root element--in order to enable keyboard navigation
     // thereof. But then this means that we have to listen for the log's keypress events, using the
@@ -48,13 +65,17 @@ export default class ProcessDetails extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    // HACK(jeff): This is a bit of a hack because we're assuming (here) that the commands rely
+    // on `this.props.process`.
     if (this.props.process !== prevProps.process) {
-      this.context.addCommandSet(COMMAND_SET_NAME, this.commands);
+      this.updateCommands();
     }
   }
 
   componentWillUnmount() {
     this.context.removeCommandSet(COMMAND_SET_NAME);
+
+    this._isMounted = false;
   }
 
   onElementKeypress(el, ch, key) {
