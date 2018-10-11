@@ -26,30 +26,34 @@ export async function loadPlugins() {
   const pluginRoot = await npmRoot({global: true});
 
   plugins = _.compact(_.map(config.plugins, (name) => {
-    let pluginOpts;
-
-    // Dunno why ESLint messes up re: `pluginOpts` here.
-    // eslint-disable-next-line prefer-const
-    ({name, opts: pluginOpts} = parsePlugin(name));
-
-    // Some sort of API object equivalent to the `{types: t}` object provided to Babel plugins. TBD.
-    const custody = {
-      debug: (...args) => screen.debug(`[${name}]`, ...args)
-    };
-
-    const pluginPath = joinPath(pluginRoot, name);
-
-    let schema;
-    try {
-      schema = require(pluginPath)(custody);
-      screen.debug(`Loaded plugin "${name}"`);
-    } catch (e) {
-      screen.debug(`Could not load plugin "${name}":`, e);
-      return null;
-    }
-
-    return new Plugin(name, schema, pluginOpts);
+    return loadPlugin(name, {pluginRoot});
   }));
+}
+
+function loadPlugin(name, {pluginRoot}) {
+  let pluginOpts;
+
+  // Dunno why ESLint messes up re: `pluginOpts` here.
+  // eslint-disable-next-line prefer-const
+  ({name, opts: pluginOpts} = parsePlugin(name));
+
+  // Some sort of API object equivalent to the `{types: t}` object provided to Babel plugins. TBD.
+  const custody = {
+    debug: (...args) => screen.debug(`[${name}]`, ...args)
+  };
+
+  const pluginPath = joinPath(pluginRoot, name);
+
+  let schema;
+  try {
+    schema = require(pluginPath)(custody);
+    screen.debug(`Loaded plugin "${name}"`);
+  } catch (e) {
+    screen.debug(`Could not load plugin "${name}":`, e);
+    return null;
+  }
+
+  return new Plugin(name, schema, pluginOpts);
 }
 
 function parsePlugin(name) {
