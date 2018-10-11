@@ -25,7 +25,7 @@ export async function loadPlugins() {
 
   const pluginRoot = await npmRoot({global: true});
 
-  plugins = _.map(config.plugins, (name) => {
+  plugins = _.compact(_.map(config.plugins, (name) => {
     let pluginOpts;
 
     // Dunno why ESLint messes up re: `pluginOpts` here.
@@ -38,9 +38,18 @@ export async function loadPlugins() {
     };
 
     const pluginPath = joinPath(pluginRoot, name);
-    const schema = require(pluginPath)(custody);
+
+    let schema;
+    try {
+      schema = require(pluginPath)(custody);
+      screen.debug(`Loaded plugin "${name}"`);
+    } catch (e) {
+      screen.debug(`Could not load plugin "${name}":`, e);
+      return null;
+    }
+
     return new Plugin(name, schema, pluginOpts);
-  });
+  }));
 }
 
 function parsePlugin(name) {
