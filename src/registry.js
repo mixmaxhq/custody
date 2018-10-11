@@ -25,17 +25,17 @@ export async function loadPlugins() {
 
   const pluginRoot = await npmRoot({global: true});
 
-  // Some sort of API object equivalent to the `{types: t}` object provided to Babel plugins. TBD.
-  const custody = {
-    debug: (...args) => screen.debug(...args)
-  };
-
   plugins = _.map(config.plugins, (name) => {
     let pluginOpts;
 
     // Dunno why ESLint messes up re: `pluginOpts` here.
     // eslint-disable-next-line prefer-const
     ({name, opts: pluginOpts} = parsePlugin(name));
+
+    // Some sort of API object equivalent to the `{types: t}` object provided to Babel plugins. TBD.
+    const custody = {
+      debug: (...args) => screen.debug(`[${name}]`, ...args)
+    };
 
     const pluginPath = joinPath(pluginRoot, name);
     const schema = require(pluginPath)(custody);
