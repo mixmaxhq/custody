@@ -16,8 +16,8 @@ export default class Process {
   /**
    * @param {Object} process - A process object returned by `Supervisord#getAllProcessInfo`.
    * @param {Object}
-   *  @param {Object} previousProcess - An object representing the process with the same `pid`,
-   *    previously returned by `supervisord#getAllProcessInfo`.
+   *  @param {Process} previousProcess - An object representing the process with the same `pid`,
+   *    with properties previously derived from `supervisord#getAllProcessInfo`.
    *  @param {Supervisord} supervisor - A supervisor client.
    */
   constructor(process, { previousProcess = null, supervisor } = {}) {
@@ -31,8 +31,7 @@ export default class Process {
     ]));
 
     // Merge child state.
-    this.childState = previousProcess && previousProcess.childState;
-    this.childDescription = previousProcess && previousProcess.childDescription;
+    this.child = previousProcess && previousProcess.child;
 
     this._supervisor = supervisor;
   }
@@ -49,17 +48,17 @@ export default class Process {
    *  @param {String} description
    */
   get effectiveState() {
-    const immediateState = this.statename;
-    const immediateDescription = this.description;
-    if (immediateState === STATES.RUNNING) {
+    let state = this.statename;
+    let description = this.description;
+    if ((state === STATES.RUNNING) && this.child) {
       // Defer to child state when the process is running.
-      const childState = this.childState;
-      const childDescription = this.childDescription;
-      if (childState) {
-        return { state: childState, description: childDescription };
+      state = this.child.state;
+      // Fall back to the parent description if the child is running.
+      if (this.child.description || (state !== STATES.RUNNING)) {
+        description = this.child.description;
       }
     }
-    return { state: immediateState, description: immediateDescription };
+    return { state, description };
   }
 
   /**

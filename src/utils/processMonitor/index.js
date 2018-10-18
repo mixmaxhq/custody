@@ -1,7 +1,7 @@
 import _ from 'underscore';
 import { detectPortConflict, clearPortConflict } from '/utils/process';
 import EventEmitter from 'events';
-import ProbeMonitor, { STATES } from './ProbeMonitor';
+import ProbeMonitor from './ProbeMonitor';
 import Process from '/models/Process/index';
 import screen from '/screen';
 
@@ -77,7 +77,7 @@ export default class ProcessMonitor extends EventEmitter {
     this.emit('update', this._processes);
   }
 
-  _onProcessUpdate(name, { state, description }) {
+  _onProcessUpdate(name, child) {
     const process = _.findWhere(this._processes, { name });
 
     if (!process) {
@@ -89,13 +89,7 @@ export default class ProcessMonitor extends EventEmitter {
     }
 
     // Update the process' state with that from the probe.
-    if (state === STATES.RUNNING) {
-      delete process.childState;
-      delete process.childDescription;
-    } else {
-      process.childState = state;
-      process.childDescription = description;
-    }
+    process.child = child;
 
     this.emit('update', this._processes);
 
