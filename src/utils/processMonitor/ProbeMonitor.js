@@ -61,6 +61,7 @@ export default class ProbeMonitor extends EventEmitter {
     } catch (e) {
       // This update was the file being deleted.
       if (e.code === 'ENOENT') return;
+      throw e;
     }
     this.emit('update', name, state);
   }
