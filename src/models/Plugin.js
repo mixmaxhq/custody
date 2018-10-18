@@ -8,6 +8,16 @@ export default class Plugin {
     this._opts = opts;
   }
 
+  update(process) {
+    if (!this._schema.update) return;
+
+    try {
+      this._schema.update(process);
+    } catch (e) {
+      screen.debug(`Error updating plugin "${this._name}" for process ${process.name}:`, e);
+    }
+  }
+
   commands(process, setNeedsReload) {
     if (!this._schema.commands) return [];
 

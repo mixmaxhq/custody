@@ -1,6 +1,7 @@
 import _ from 'underscore';
 import { detectPortConflict, clearPortConflict } from '/utils/process';
 import EventEmitter from 'events';
+import { plugins } from '/registry';
 import ProbeMonitor from './ProbeMonitor';
 import Process from '/models/Process/index';
 import screen from '/screen';
@@ -75,6 +76,10 @@ export default class ProcessMonitor extends EventEmitter {
     });
 
     this.emit('update', this._processes);
+
+    if (!_.isEmpty(plugins)) { // Micro-optimization.
+      this._processes.forEach((process) => _.invoke(plugins, 'update', process));
+    }
   }
 
   _onProcessUpdate(name, child) {
@@ -92,6 +97,8 @@ export default class ProcessMonitor extends EventEmitter {
     process.child = child;
 
     this.emit('update', this._processes);
+
+    _.invoke(plugins, 'update', process);
 
     // TODO(jeff): Detect/fix port conflicts suffered by top-level Supervisor processes,
     // i.e. call this in `_updateProcesses` too. Just not sure if/how Supervisor reports such errors.
