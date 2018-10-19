@@ -2,10 +2,9 @@ import _ from 'underscore';
 import screen from '/screen';
 
 export default class Plugin {
-  constructor(name, schema, opts = {}) {
+  constructor(name, schema) {
     this._name = name;
     this._schema = schema;
-    this._opts = opts;
   }
 
   update(process) {
@@ -37,7 +36,6 @@ export default class Plugin {
     let commands;
     try {
       commands = this._schema.commands(process, {
-        opts: this._opts,
         setNeedsReload: setNeedsReloadSafely
       });
 

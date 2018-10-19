@@ -31,11 +31,11 @@ export async function loadPlugins() {
 }
 
 function loadPlugin(name, {pluginRoot}) {
-  let pluginOpts;
+  let opts;
 
-  // Dunno why ESLint messes up re: `pluginOpts` here.
+  // Dunno why ESLint messes up re: `opts` here.
   // eslint-disable-next-line prefer-const
-  ({name, opts: pluginOpts} = parsePlugin(name));
+  ({name, opts} = parsePlugin(name));
 
   // Some sort of API object equivalent to the `{types: t}` object provided to Babel plugins. TBD.
   const custody = {
@@ -46,14 +46,14 @@ function loadPlugin(name, {pluginRoot}) {
 
   let schema;
   try {
-    schema = require(pluginPath)(custody);
+    schema = require(pluginPath)(custody, opts);
     screen.debug(`Loaded plugin "${name}"`);
   } catch (e) {
     screen.debug(`Could not load plugin "${name}":`, e);
     return null;
   }
 
-  return new Plugin(name, schema, pluginOpts);
+  return new Plugin(name, schema);
 }
 
 function parsePlugin(name) {
