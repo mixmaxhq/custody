@@ -21,9 +21,9 @@ export { STATES }; // Re-use process states for the probes.
  *
  *  @property {String} state - One of `STATES`.
  *  @property {String=} description - An optional description of the process' state.
- *  @property {Int|undefined} pid - The process' PID. Only reported by custody-probe>=0.3.0.
+ *  @property {Int|undefined} pid - The process' PID. Only reported by @custody/probe>=0.3.0.
  *  @property {String|undefined} inspectorUrl - The URL of the active V8 inspector, or `undefined`
- *    if there is none. Only reported by custody-probe>=0.3.0.
+ *    if there is none. Only reported by @custody/probe>=0.3.0.
  *
  * See https://github.com/mixmaxhq/custody/wiki/custody-probe for explanation of architecture.
  */
