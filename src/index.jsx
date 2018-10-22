@@ -8,6 +8,9 @@ import React from 'react';
 import {render} from 'react-blessed';
 import screen from '/screen';
 
+// TODO(jeff): Refactor the `screen` module / imports thereof to delay taking over the screen until
+// `start` is called. In the meantime, takeover may be prevented by delaying `require`-ing this
+// module.
 export default async function start({ port, notifications }) {
   let stopOOMCheck;
 
