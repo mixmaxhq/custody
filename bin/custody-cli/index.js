@@ -1,5 +1,8 @@
 #! /usr/bin/env node
 
+const custody = require('../..');
+const openSettings = require('./openSettings');
+
 require('yargs')
   .command('$0', 'launch the Supervisor frontend',
     (yargs) => {
@@ -22,10 +25,6 @@ require('yargs')
         .example('$0 --notifications');
     },
     (argv) => {
-      // Delay requiring custody until we are about to launch the frontend to prevent taking over
-      // the screen when other commmands are executed (see the note in custody's main module).
-      const custody = require('../..');
-
       custody(argv)
         .then(() => process.exit(0))
         .catch((err) => {
@@ -40,7 +39,7 @@ require('yargs')
   .command('settings', 'configure custody',
     () => {},
     () => {
-      require('./openSettings')()
+      openSettings()
         .then(() => process.exit(0))
         .catch((err) => {
           console.error('Could not open settings:', err);

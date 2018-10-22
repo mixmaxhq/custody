@@ -6,11 +6,8 @@ import restartApproachingOOM from '/oomWorkaround';
 import ProcessMonitor from '/utils/processMonitor/index';
 import React from 'react';
 import {render} from 'react-blessed';
-import screen from '/screen';
+import screen, { initialize as initializeScreen } from '/screen';
 
-// TODO(jeff): Refactor the `screen` module / imports thereof to delay taking over the screen until
-// `start` is called. In the meantime, takeover may be prevented by delaying `require`-ing this
-// module.
 export default async function start({ port, notifications }) {
   let stopOOMCheck;
 
@@ -21,6 +18,10 @@ export default async function start({ port, notifications }) {
 
   try {
     clearShutdown();
+
+    // Make sure to initialize the screen before using almost other API in this project since any
+    // of them may log to the screen's debug window.
+    initializeScreen();
 
     await loadPlugins();
 
