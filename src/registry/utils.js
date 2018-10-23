@@ -2,6 +2,7 @@ import _ from 'underscore';
 import {join as joinPath} from 'path';
 import Plugin from '/models/Plugin';
 import screen from '/screen';
+import STATES from '/models/Process/states';
 
 /**
  * Loads a `Plugin` instance to represent the specified item in the `plugins` array in `.custodyrc.`
@@ -63,6 +64,12 @@ function parsePlugin(item) {
  */
 function generatePluginAPI(name) {
   return {
-    debug: (...args) => screen.debug(`[${name}]`, ...args)
+    // To be used by plugins to log messages, rather than `console.log`, since that will overwrite
+    // the app. Also gives us the opportunity to prefix the logs with the plugin's name to better
+    // distinguish the logs.
+    debug: (...args) => screen.debug(`[${name}]`, ...args),
+
+    // Process states, so that plugins don't have to hardcode these values.
+    PROCESS_STATES: STATES
   };
 }

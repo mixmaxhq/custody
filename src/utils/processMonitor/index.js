@@ -1,5 +1,4 @@
 import _ from 'underscore';
-import { detectPortConflict, clearPortConflict } from '/utils/process';
 import EventEmitter from 'events';
 import { plugins } from '/registry/index';
 import ProbeMonitor from './ProbeMonitor';
@@ -99,25 +98,5 @@ export default class ProcessMonitor extends EventEmitter {
     this.emit('update', this._processes);
 
     _.invoke(plugins, 'update', process);
-
-    // TODO(jeff): Detect/fix port conflicts suffered by top-level Supervisor processes,
-    // i.e. call this in `_updateProcesses` too. Just not sure if/how Supervisor reports such errors.
-    this._fixPortConflictIfNecessary(process).catch((err) => {
-      screen.debug(`Could not fix port conflict for ${name}:`, err);
-    });
-  }
-
-  async _fixPortConflictIfNecessary(process) {
-    if (!this._fixPortConflicts) return;
-
-    const name = process.name;
-    const conflictingPort = detectPortConflict(process);
-    if (!conflictingPort) return;
-
-    screen.debug(`Clearing conflict on port ${conflictingPort} used by ${name}`);
-    await clearPortConflict(conflictingPort);
-
-    screen.debug('Port conflict cleared. Restarting', name);
-    await process.restart();
   }
 }
