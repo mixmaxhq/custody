@@ -1,7 +1,7 @@
 import { clearShutdown, markCleanShutdown } from '/shutdownTracking';
 import { createClient as createSupervisor, getMainLogfile } from '/utils/supervisor';
 import Console from '/components/Console';
-import {loadPlugins} from '/registry';
+import {loadPlugins} from '/registry/index';
 import restartApproachingOOM from '/oomWorkaround';
 import ProcessMonitor from '/utils/processMonitor/index';
 import React from 'react';

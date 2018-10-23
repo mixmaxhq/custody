@@ -1,7 +1,7 @@
 import _ from 'underscore';
 import { detectPortConflict, clearPortConflict } from '/utils/process';
 import EventEmitter from 'events';
-import { plugins } from '/registry';
+import { plugins } from '/registry/index';
 import ProbeMonitor from './ProbeMonitor';
 import Process from '/models/Process/index';
 import screen from '/screen';

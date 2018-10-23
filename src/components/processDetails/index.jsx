@@ -1,7 +1,7 @@
 import _ from 'underscore';
 import memoize from 'memoize-one';
 import Log from './ProcessLog';
-import {plugins} from '/registry';
+import {plugins} from '/registry/index';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Restart from '/models/commands/Restart';
