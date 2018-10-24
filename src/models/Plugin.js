@@ -39,7 +39,8 @@ export default class Plugin {
         setNeedsReload: setNeedsReloadSafely
       });
 
-      if (!_.isArray(commands)) {
+      // Second condition guards against the array being singly-nested.
+      if (!_.isArray(commands) || (!_.isEmpty(commands) && !_.isArray(commands[0]))) {
         throw new Error(`Invalid return value: ${commands}`);
       }
     } catch (e) {
