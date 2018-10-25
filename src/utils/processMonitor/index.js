@@ -1,8 +1,8 @@
 import _ from 'underscore';
-import { detectPortConflict, clearPortConflict } from '/utils/process';
 import EventEmitter from 'events';
-import ProbeMonitor, { STATES } from './ProbeMonitor';
-import Process from '/models/Process';
+import { plugins } from '/registry/index';
+import ProbeMonitor from './ProbeMonitor';
+import Process from '/models/Process/index';
 import screen from '/screen';
 
 export default class ProcessMonitor extends EventEmitter {
@@ -75,9 +75,13 @@ export default class ProcessMonitor extends EventEmitter {
     });
 
     this.emit('update', this._processes);
+
+    if (!_.isEmpty(plugins)) { // Micro-optimization.
+      this._processes.forEach((process) => _.invoke(plugins, 'update', process));
+    }
   }
 
-  _onProcessUpdate(name, { state, description }) {
+  _onProcessUpdate(name, child) {
     const process = _.findWhere(this._processes, { name });
 
     if (!process) {
@@ -89,34 +93,10 @@ export default class ProcessMonitor extends EventEmitter {
     }
 
     // Update the process' state with that from the probe.
-    if (state === STATES.RUNNING) {
-      delete process.childState;
-      delete process.childDescription;
-    } else {
-      process.childState = state;
-      process.childDescription = description;
-    }
+    process.child = child;
 
     this.emit('update', this._processes);
 
-    // TODO(jeff): Detect/fix port conflicts suffered by top-level Supervisor processes,
-    // i.e. call this in `_updateProcesses` too. Just not sure if/how Supervisor reports such errors.
-    this._fixPortConflictIfNecessary(process).catch((err) => {
-      screen.debug(`Could not fix port conflict for ${name}:`, err);
-    });
-  }
-
-  async _fixPortConflictIfNecessary(process) {
-    if (!this._fixPortConflicts) return;
-
-    const name = process.name;
-    const conflictingPort = detectPortConflict(process);
-    if (!conflictingPort) return;
-
-    screen.debug(`Clearing conflict on port ${conflictingPort} used by ${name}`);
-    await clearPortConflict(conflictingPort);
-
-    screen.debug('Port conflict cleared. Restarting', name);
-    await process.restart();
+    _.invoke(plugins, 'update', process);
   }
 }

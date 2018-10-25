@@ -1,28 +1,23 @@
 import _ from 'underscore';
+import {getWorkingDirectory} from '/utils/process';
 
 /**
  * States of a process' lifecycle.
+ *
+ * Re-exported from another module to avoid a circular dependency between this and
+ * `/utils/process`.
+ * TODO(jeff): Move back here once we factor port-conflict detection into a plugin:
+ * https://github.com/mixmaxhq/custody/issues/63
  */
-export const STATES = {
-  // The process is starting up.
-  STARTING: 'STARTING',
-
-  // The process is running.
-  RUNNING: 'RUNNING',
-
-  // The process has been stopped.
-  STOPPED: 'STOPPED',
-
-  // The process has exited with an error and will not be restarted.
-  FATAL: 'FATAL'
-};
+import STATES from './states';
+export { STATES };
 
 export default class Process {
   /**
    * @param {Object} process - A process object returned by `Supervisord#getAllProcessInfo`.
    * @param {Object}
-   *  @param {Object} previousProcess - An object representing the process with the same `pid`,
-   *    previously returned by `supervisord#getAllProcessInfo`.
+   *  @param {Process} previousProcess - An object representing the process with the same `pid`,
+   *    with properties previously derived from `supervisord#getAllProcessInfo`.
    *  @param {Supervisord} supervisor - A supervisor client.
    */
   constructor(process, { previousProcess = null, supervisor } = {}) {
@@ -36,8 +31,7 @@ export default class Process {
     ]));
 
     // Merge child state.
-    this.childState = previousProcess && previousProcess.childState;
-    this.childDescription = previousProcess && previousProcess.childDescription;
+    this.child = previousProcess && previousProcess.child;
 
     this._supervisor = supervisor;
   }
@@ -54,17 +48,17 @@ export default class Process {
    *  @param {String} description
    */
   get effectiveState() {
-    const immediateState = this.statename;
-    const immediateDescription = this.description;
-    if (immediateState === STATES.RUNNING) {
+    let state = this.statename;
+    let description = this.description;
+    if ((state === STATES.RUNNING) && this.child) {
       // Defer to child state when the process is running.
-      const childState = this.childState;
-      const childDescription = this.childDescription;
-      if (childState) {
-        return { state: childState, description: childDescription };
+      state = this.child.state;
+      // Fall back to the parent description if the child is running.
+      if (this.child.description || (state !== STATES.RUNNING)) {
+        description = this.child.description;
       }
     }
-    return { state: immediateState, description: immediateDescription };
+    return { state, description };
   }
 
   /**
@@ -85,6 +79,13 @@ export default class Process {
    */
   get daemonName() {
     return (this.group === this.name) ? this.name : `${this.group}:${this.name}`;
+  }
+
+  /**
+   * @return {Promise<String>} The working directory of the process.
+   */
+  async getWorkingDirectory() {
+    return getWorkingDirectory(this.pid);
   }
 
   async start() {

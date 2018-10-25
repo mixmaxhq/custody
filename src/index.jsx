@@ -1,11 +1,12 @@
 import { clearShutdown, markCleanShutdown } from '/shutdownTracking';
 import { createClient as createSupervisor, getMainLogfile } from '/utils/supervisor';
 import Console from '/components/Console';
+import {loadPlugins} from '/registry/index';
 import restartApproachingOOM from '/oomWorkaround';
 import ProcessMonitor from '/utils/processMonitor/index';
 import React from 'react';
 import {render} from 'react-blessed';
-import screen from '/screen';
+import screen, { initialize as initializeScreen } from '/screen';
 
 export default async function start({ port, notifications }) {
   let stopOOMCheck;
@@ -17,6 +18,12 @@ export default async function start({ port, notifications }) {
 
   try {
     clearShutdown();
+
+    // Make sure to initialize the screen before using almost other API in this project since any
+    // of them may log to the screen's debug window.
+    initializeScreen();
+
+    await loadPlugins();
 
     stopOOMCheck = restartApproachingOOM();
 

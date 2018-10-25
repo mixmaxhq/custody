@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import { STATES } from '/models/Process';
+import { STATES } from '/models/Process/index';
 
 function processIsHalted(process) {
   return _.contains([STATES.STOPPED, STATES.FATAL], process.effectiveState.state);
