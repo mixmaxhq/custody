@@ -19,7 +19,7 @@ individual services' logs with _minimum keystrokes_.
 ## Installation
 
 ```sh
-npm install -g custody-cli
+npm install -g @custody/cli
 ```
 
 ## Configuration

@@ -1,5 +1,5 @@
 {
-  "name": "custody-cli",
+  "name": "@custody/cli",
   "version": "0.6.0",
   "description": "A developer-oriented frontend for Supervisor",
   "bin": "bin/custody-cli/index.js",
@@ -11,6 +11,9 @@
   "repository": "https://github.com/mixmaxhq/custody",
   "author": "Jeff Wear <jeff@mixmax.com>",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "start": "bin/custody-cli.js",
     "build": "[ \"$WATCH\" == 'true' ] && rollup -cw || rollup -c",
