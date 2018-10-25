@@ -1,5 +1,7 @@
 ## Release History
 
+* 0.6.0 Add support for plugins (#74)! Breaking change because port conflict resolution has been moved to https://github.com/mixmaxhq/custody-plugin-clear-port-conflicts.
+
 * 0.5.0 Support `CUSTODY_PROC_DIR` variable
 
 * 0.4.0 Add support for displaying maintail output #72
