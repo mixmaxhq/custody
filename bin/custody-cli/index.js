@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 const custody = require('../..');
-const openSettings = require('./openSettings');
+const settings = require('./settings');
 
 require('yargs')
   .command('$0', 'launch the Supervisor frontend',
@@ -36,16 +36,7 @@ require('yargs')
           process.exit(1);
         });
     })
-  .command('settings', 'configure custody',
-    () => {},
-    () => {
-      openSettings()
-        .then(() => process.exit(0))
-        .catch((err) => {
-          console.error('Could not open settings:', err);
-          process.exit(1);
-        });
-    })
+  .command(settings)
   .help('h')
   .alias('h', 'help')
   .argv;
