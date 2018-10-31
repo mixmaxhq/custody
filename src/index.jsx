@@ -5,10 +5,14 @@ import {loadPlugins} from '/registry/index';
 import restartApproachingOOM from '/oomWorkaround';
 import ProcessMonitor from '/utils/processMonitor/index';
 import React from 'react';
-import {render} from 'react-blessed';
 import screen, { initialize as initializeScreen } from '/screen';
 
 export default async function start({ port, notifications }) {
+  // We wait to `require` this until `start` is called because it does something on load that
+  // prevents the process from naturally exiting (i.e. if the user does something else with the
+  // `custody-cli` binary than running this).
+  const { render } = require('react-blessed');
+
   let stopOOMCheck;
 
   function teardown() {
