@@ -1,5 +1,7 @@
 ## Release History
 
+* 0.7.1 Add a CLI command for printing the location of custody’s settings (#76)
+
 * 0.7.0 Fix bin name for new package name, @custody/cli
 
 * 0.6.0 Add support for plugins (#74)! Breaking change because port conflict resolution has been moved to https://github.com/mixmaxhq/custody-plugin-clear-port-conflicts.
