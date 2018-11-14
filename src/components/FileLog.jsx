@@ -90,13 +90,16 @@ export default class FileLog extends Component {
         // blessed's mouse handling while this component is mounted to let the terminal take over
         // scrolling.
         keys
+        // Enable vi-style navigation. Implemented here:
+        // https://github.com/chjj/blessed/blob/eab243fc7ad27f1d2932db6134f7382825ee3488/lib/widgets/scrollablebox.js
+        // Supported navigation keys:
+        // -  k,  j: up, down
+        // - ctl+u, ctl+d: half-page up, half-page down
+        // - ctl+b, ctl+f: page up, page down
+        // - shift+g, g: jump to bottom, jump to top.
+        vi
         focused={this.props.focused}
         scrollback={SCROLLBACK}
-        // TODO(jeff): Enable pinning to the bottom of the logs. Possible using the `scrollOnInput`
-        // prop, just requires us to give the user a keyboard shortcut to do so. Not totally sure
-        // this is necessary though since the component will follow the logs if the user is scrolled
-        // to the bottom--sounds like enabling this would only jump the user to the end if they had
-        // scrolled away.
       />
     );
   }
