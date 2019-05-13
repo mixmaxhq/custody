@@ -11,6 +11,9 @@
 /**
  * @typedef {Object} CommandDescription
  *
+ * @property {String=} displayName - The string to use to represent the command trigger in the
+ *   command menu. Defaults to the first argument of the `Command` array--specify this key if you
+ *   want to override that for some reason.
  * @property {String} verb - A description of what the command does, of the form
  *   "<action> [<subject>]". Examples: 'restart' or "show/hide commands".
  * @property {AsyncFunction|Function} toggle - A function that, when invoked, will perform the

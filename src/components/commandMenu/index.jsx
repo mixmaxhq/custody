@@ -77,8 +77,8 @@ export default class CommandMenu extends Component {
     if (this.state.hidden) return null;
 
     let boxContent = [...this.commands]
-      .map(([ch, {verb, isSeparator}]) => {
-        return isSeparator ? '' : `'${ch}' to ${verb}`;
+      .map(([ch, {displayName = ch, verb, isSeparator}]) => {
+        return isSeparator ? '' : `'${displayName}' to ${verb}`;
       })
       .join('\n');
 
