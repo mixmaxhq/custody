@@ -24,6 +24,17 @@ export default class FileLog extends Component {
     enableMouse(true);
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props.logfile !== prevProps.logfile) {
+      this.stopTailing();
+
+      // Clear the existing logs. I couldn't find a higher-level "clear" or "reset" API.
+      this.log.setContent('');
+
+      this.startTailing();
+    }
+  }
+
   startTailing() {
     // Safety belts.
     if (this.tail) return;
