@@ -15,6 +15,17 @@ import { load, store } from '/utils/storage';
 
 const exec = promisify(require('child_process').exec);
 
+function processHasChangedIdentity(process, prevProcess) {
+  // If it's the exact same process, or no process is selected at both points in time, no change.
+  if (process === prevProcess) return false;
+
+  // If a process is selected where one wasn't previously selected, or vice versa, change.
+  if ((!prevProcess && process) || (prevProcess && !process)) return true;
+
+  // If this is a distinct process (not a new copy with the same name), change.
+  return (process.name !== prevProcess.name);
+}
+
 function processHasChangedState(prevProps) {
   return (process) => {
     const previousProcess = _.findWhere(prevProps.processes, { name: process.name });
@@ -147,7 +158,11 @@ export default class Console extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.state.selectedProcess !== prevState.selectedProcess) {
+    const selectedProcessIsNew = processHasChangedIdentity(
+      this.state.selectedProcess,
+      prevState.selectedProcess
+    );
+    if (selectedProcessIsNew) {
       // Only store the selected process if it actually changed, to avoid blowing away the value
       // in response to another change.
       store('selectedProcess', this.state.selectedProcess && this.state.selectedProcess.name);
