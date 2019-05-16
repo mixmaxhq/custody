@@ -1,7 +1,9 @@
 import _ from 'underscore';
+import { getBackCommand, getForwardCommand } from '/models/commands/navigation';
 import CommandMenu from '/components/commandMenu/index';
 import commands, {addCommandSet, removeCommandSet} from '/components/commandMenu/commands';
 import FileLog from './FileLog';
+import * as history from '/utils/history';
 import { promisify } from 'promise-callbacks';
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
@@ -14,6 +16,17 @@ import { STATES } from '/models/Process/index';
 import { load, store } from '/utils/storage';
 
 const exec = promisify(require('child_process').exec);
+
+function processHasChangedIdentity(process, prevProcess) {
+  // If it's the exact same process, or no process is selected at both points in time, no change.
+  if (process === prevProcess) return false;
+
+  // If a process is selected where one wasn't previously selected, or vice versa, change.
+  if ((!prevProcess && process) || (prevProcess && !process)) return true;
+
+  // If this is a distinct process (not a new copy with the same name), change.
+  return (process.name !== prevProcess.name);
+}
 
 function processHasChangedState(prevProps) {
   return (process) => {
@@ -31,6 +44,9 @@ function processHasChangedState(prevProps) {
 const COMMAND_SET_NAME = 'console';
 
 function getCommandSet(component) {
+  // NOTE: If you reference any new properties of `component.state` below, make sure to call
+  // `updateOwnCommandSet` from `componentDidUpdate` if/when that state changes.
+
   let maintailDescription;
   if (component.state.tailingMainLogfile) {
     maintailDescription = 'switch to/{underline}from{/} maintail';
@@ -38,14 +54,18 @@ function getCommandSet(component) {
     maintailDescription = 'switch {underline}to{/}/from maintail';
   }
 
-  return [
+  return _.compact([
+    // The navigation commands are for switching between selected processes so only show them if
+    // we're currently displaying an individual process.
+    !component.state.tailingMainLogfile && getBackCommand(),
+    !component.state.tailingMainLogfile && getForwardCommand(),
     ['tab', {
       verb: maintailDescription,
       toggle() {
         component.setState(({ tailingMainLogfile }) => ({ tailingMainLogfile: !tailingMainLogfile }));
       }
     }]
-  ];
+  ]);
 }
 
 export default class Console extends Component {
@@ -79,8 +99,14 @@ export default class Console extends Component {
     this.setState({commands: removeCommandSet(name)});
   }
 
-  componentDidMount() {
+  updateOwnCommandSet() {
     this.addCommandSet(COMMAND_SET_NAME, getCommandSet(this));
+  }
+
+  componentDidMount() {
+    this.updateOwnCommandSet();
+
+    this._unlistenToHistory = history.listen(::this.onLocationChange);
 
     // Our various children have to be focused--not our root element--in order to enable keyboard
     // navigation thereof. But then this means that we have to listen for the children's keypress
@@ -118,7 +144,23 @@ export default class Console extends Component {
   }
 
   componentWillUnmount() {
+    if (this._unlistenToHistory) {
+      this._unlistenToHistory();
+      this._unlistenToHistory = null;
+    }
     this.removeCommandSet(COMMAND_SET_NAME);
+  }
+
+  onLocationChange({ process: processName }) {
+    const selectedProcess = _.findWhere(this.props.processes, {
+      name: processName
+    });
+
+    // This conditional is safety belts--we always assume locations to reference processes for the
+    // moment.
+    if (selectedProcess) this.setState({ selectedProcess });
+
+    this.updateOwnCommandSet();
   }
 
   // Whatever keys we handle here, should also be withheld from the process table in
@@ -147,7 +189,11 @@ export default class Console extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.state.selectedProcess !== prevState.selectedProcess) {
+    const selectedProcessIsNew = processHasChangedIdentity(
+      this.state.selectedProcess,
+      prevState.selectedProcess
+    );
+    if (selectedProcessIsNew) {
       // Only store the selected process if it actually changed, to avoid blowing away the value
       // in response to another change.
       store('selectedProcess', this.state.selectedProcess && this.state.selectedProcess.name);
@@ -160,7 +206,8 @@ export default class Console extends Component {
     }
 
     if (this.state.tailingMainLogfile !== prevState.tailingMainLogfile) {
-      this.addCommandSet(COMMAND_SET_NAME, getCommandSet(this));
+      // Update the commands when state values they reference change.
+      this.updateOwnCommandSet();
     }
   }
 
@@ -194,11 +241,33 @@ export default class Console extends Component {
     });
   }
 
-  onSelect(process) {
-    this.setState({ selectedProcess: process });
+  onSelect(newProcess) {
+    const newLocation = {
+      process: newProcess.name
+    };
+
+    // Since we don't represent the process table in the history, we may navigate to the same
+    // location twice if the user closes and then reopens the same process. Make sure that we
+    // avoid creating a duplicate history item in this case.
+    const currentLocation = history.currentLocation();
+    let locationIsNew;
+    if (!currentLocation) {
+      locationIsNew = true;
+    } else {
+      locationIsNew = newLocation.process !== currentLocation.process;
+    }
+
+    // This will set `selectedProcess` via `onLocationChange` whether we `push` OR `replace`.
+    if (locationIsNew) {
+      history.push(newLocation);
+    } else {
+      history.replace(newLocation);
+    }
   }
 
   onDeselect() {
+    // HACK(jeff): We don't include the process table in the history, allowing the user to navigate
+    // directly between selected processes.
     this.setState({ selectedProcess: null });
   }
 
