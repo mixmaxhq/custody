@@ -1,5 +1,7 @@
 ## Release History
 
+* 0.8.0 Make it possible for the user to navigate directly between recent processes (#79)
+
 * 0.7.1 Add a CLI command for printing the location of custody’s settings (#76)
 
 * 0.7.0 Fix bin name for new package name, @custody/cli
