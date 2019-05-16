@@ -242,9 +242,9 @@ export default class Console extends Component {
   }
 
   onSelect(newProcess) {
-    const newPath = history.formatPath({
+    const newLocation = {
       process: newProcess.name
-    });
+    };
 
     // Since we don't represent the process table in the history, we may navigate to the same
     // location twice if the user closes and then reopens the same process. Make sure that we
@@ -254,14 +254,14 @@ export default class Console extends Component {
     if (!currentLocation) {
       locationIsNew = true;
     } else {
-      locationIsNew = newPath !== `${currentLocation.pathname}${currentLocation.search}${currentLocation.hash}`;
+      locationIsNew = newLocation.process !== currentLocation.process;
     }
 
     // This will set `selectedProcess` via `onLocationChange` whether we `push` OR `replace`.
     if (locationIsNew) {
-      history.push(newPath);
+      history.push(newLocation);
     } else {
-      history.replace(newPath);
+      history.replace(newLocation);
     }
   }
 

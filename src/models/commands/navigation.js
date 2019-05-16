@@ -4,7 +4,7 @@ export function getBackCommand() {
   const previousLocation = history.previousLocation();
   if (!previousLocation) return null;
 
-  const { process: previousProcessName } = history.parsePath(previousLocation.pathname);
+  const { process: previousProcessName } = previousLocation;
 
   // This conditional is safety belts--we always assume locations to reference processes for the
   // moment.
@@ -23,7 +23,7 @@ export function getForwardCommand() {
   const nextLocation = history.nextLocation();
   if (!nextLocation) return null;
 
-  const { process: nextProcessName } = history.parsePath(nextLocation.pathname);
+  const { process: nextProcessName } = nextLocation;
 
   // This conditional is safety belts--we always assume locations to reference processes for the
   // moment.

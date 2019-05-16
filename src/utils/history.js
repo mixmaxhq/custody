@@ -13,22 +13,35 @@ export function listen(listener) {
   });
 }
 
-export function push(path) {
-  history.push(path);
+/**
+ * @param {String} process - The name of a process.
+ */
+export function push({ process }) {
+  history.push(formatPath({ process }));
 }
 
-// Note that this will still trigger listeners.
-export function replace(path) {
-  history.replace(path);
+/**
+ * Note that this will still trigger listeners.
+ *
+ * @param {String} process - The name of a process.
+ */
+export function replace({ process }) {
+  history.replace(formatPath({ process }));
 }
 
 export function currentLocation() {
   // Will return `undefined` to start, since we initialize it with `initialEntries: []`.
-  return history.location;
+  const rawLocation = history.location;
+  if (!rawLocation) return null;
+
+  return parsePath(rawLocation.pathname);
 }
 
 export function previousLocation() {
-  return history.entries[history.index - 1];
+  const rawLocation = history.entries[history.index - 1];
+  if (!rawLocation) return null;
+
+  return parsePath(rawLocation.pathname);
 }
 
 export function canGoBack() {
@@ -40,7 +53,10 @@ export function goBack() {
 }
 
 export function nextLocation() {
-  return history.entries[history.index + 1];
+  const rawLocation = history.entries[history.index + 1];
+  if (!rawLocation) return null;
+
+  return parsePath(rawLocation.pathname);
 }
 
 export function canGoForward() {
@@ -53,7 +69,7 @@ export function goForward() {
 
 /* Path formatting and parsing */
 
-export function formatPath({ process }) {
+function formatPath({ process }) {
   // One way to extend this function for additional sorts of locations: add keys to the arguments
   // object, with each key representing the type of path and expecting only one of the keys to
   // be defined for any call.
@@ -63,7 +79,7 @@ export function formatPath({ process }) {
   return `/process/${process}`;
 }
 
-export function parsePath(path) {
+function parsePath(path) {
   const components = path.match(/^\/(.+?)\/(.+?)$/);
   if (!components) throw new Error(`path was not formatted using formatPath: "${path}"`);
 
