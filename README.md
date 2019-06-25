@@ -26,6 +26,8 @@ npm install -g @custody/cli
 
 By default, custody uses `/usr/local/var/custody` to store information and to enable [probe](https://github.com/mixmaxhq/custody-probe)->custody communication. You can override this directory by specifying the `CUSTODY_PROC_DIR` environment variable.
 
+**Caution:** Read https://github.com/mixmaxhq/custody/issues/80 to see how to properly configure this variable.
+
 ## Usage
 
 Make sure that Supervisor is running. Then run
