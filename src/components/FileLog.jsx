@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
-import {Tail} from 'tail';
+import {Tail} from '@mixmaxhq/tail';
 import screen, {enableMouse} from '/screen';
 import {statSync} from 'fs';
 

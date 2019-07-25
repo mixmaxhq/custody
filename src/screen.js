@@ -1,4 +1,4 @@
-import blessed from 'blessed';
+import blessed from '@mixmaxhq/blessed';
 
 /**
  * @type {Screen}

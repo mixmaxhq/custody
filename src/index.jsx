@@ -1,3 +1,4 @@
+import blessed from '@mixmaxhq/blessed';
 import { clearShutdown, markCleanShutdown } from '/shutdownTracking';
 import { createClient as createSupervisor, getMainLogfile } from '/utils/supervisor';
 import Console from '/components/Console';
@@ -7,12 +8,16 @@ import ProcessMonitor from '/utils/processMonitor/index';
 import React from 'react';
 import screen, { initialize as initializeScreen } from '/screen';
 
-export default async function start({ port, notifications }) {
-  // We wait to `require` this until `start` is called because it does something on load that
-  // prevents the process from naturally exiting (i.e. if the user does something else with the
-  // `custody-cli` binary than running this).
-  const { render } = require('react-blessed');
+// Set for the benefit of `react-blessed` to suppress a developer warning:
+// https://github.com/Yomguithereal/react-blessed/issues/99
+// And we use `require` rather than `import` here to make sure this code runs before the library
+// loads.
+process.env.NODE_ENV = 'production';
+const { createBlessedRenderer } = require('react-blessed');
 
+const render = createBlessedRenderer(blessed);
+
+export default async function start({ port, notifications }) {
   let stopOOMCheck;
 
   function teardown() {
