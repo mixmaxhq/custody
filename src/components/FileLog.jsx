@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, {Component} from 'react';
 import {Tail} from '@mixmaxhq/tail';
 import screen, {enableMouse} from '/screen';
+import * as semver from 'semver';
 import {statSync} from 'fs';
 
 // It might be nice to render the entire log file. However this is probably (?) unnecessary and
@@ -54,11 +55,33 @@ export default class FileLog extends Component {
       return;
     }
 
+    /**
+     * `fs.watch` does not consistently emit 'change' events when data is written to the log files
+     * under Node 10.16.0, possibly due to https://github.com/nodejs/node/issues/29460.
+     * `fs.watchFile` still works, but is less efficient, per the docs, so only use it if necessary
+     * and also suggest that users run custody under an older version of Node. See
+     * https://github.com/mixmaxhq/custody/issues/82 for more information.
+     */
+    const mustUseWatchFile = semver.gte(process.version, '10.16.0');
+    if (mustUseWatchFile) {
+      screen.debug('WARNING: `fs.watch` is broken when using this version of Node, falling back ' +
+        'to `fs.watchFile`. To reduce CPU utilization, run `custody-cli` under an older version ' +
+        'of Node. For more information see https://github.com/mixmaxhq/custody/issues/82.');
+    }
+
     // As documented on `INITIAL_SCROLLBACK`, we can't render the entire log file. However, the
     // 'tail' module lacks a `-n`-like option to get the last `INITIAL_SCROLLBACK` lines. So what we
     // do is load the entire file, but wait to render only the last `INITIAL_SCROLLBACK` lines, then
     // start streaming.
-    this.tail = new Tail(logfile, { fromBeginning: true });
+    this.tail = new Tail(logfile, {
+      fromBeginning: true,
+      ...(mustUseWatchFile && {
+        useWatchFile: true,
+        fsWatchOptions: {
+          interval: 100,
+        }
+      })
+    });
 
     let logs = [];
     let initialDataFlushed = false;

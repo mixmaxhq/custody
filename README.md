@@ -31,6 +31,11 @@ to set it.
 
 ## Usage
 
+> Node 10.16.0 shipped [a regression](https://github.com/mixmaxhq/custody/issues/82#issuecomment-533348756)
+in file watching that may degrade performance when custody is tailing log files. If you experience
+high CPU utilization while using custody, please try running custody under an older version of Node
+e.g. using [`nvm`](https://github.com/nvm-sh/nvm).
+
 Make sure that Supervisor is running. Then run
 
 ```sh
