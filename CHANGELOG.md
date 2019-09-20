@@ -1,5 +1,7 @@
 ## Release History
 
+* 0.8.2 Fix logfile tailing under Node 10.16.0 (#84)
+
 * 0.8.1 Remove GitHub dependencies (#81)
 
 * 0.8.0 Make it possible for the user to navigate directly between recent processes (#79)
