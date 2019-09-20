@@ -35,6 +35,15 @@ export function initialize() {
     debug: true
   });
 
+  // Uncomment this if you want the debug log to immediately and permanently appear
+  // (useful for local development).
+  // screen.on('render', () => {
+  //   if (screen.debugLog.hidden) {
+  //     screen.debugLog.toggle();
+  //   }
+  //   screen.debugLog.setFront();
+  // });
+
   screen.key('f12', () => {
     // Override `mouseEnabled` as long as the debug log is shown, so it can be scrolled.
     // Then reset the enabled state afterward.
