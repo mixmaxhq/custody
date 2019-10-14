@@ -1,4 +1,6 @@
+import _ from 'underscore';
 import FileLog from '/components/FileLog';
+import { plugins } from '/registry/index';
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
 import screen from '/screen';
@@ -51,6 +53,10 @@ export default class ProcessLog extends Component {
     this.setState({ logfileIsLoaded: true });
   }
 
+  onMessage(message) {
+    _.invoke(plugins, 'log', this.props.process, message);
+  }
+
   render() {
     if (!this.state.logfileIsLoaded) return null;
 
@@ -59,6 +65,7 @@ export default class ProcessLog extends Component {
         logfile={this.props.process.logfile}
         focused={this.props.focused}
         layout={this.props.layout}
+        onMessage={::this.onMessage}
       />
     );
   }

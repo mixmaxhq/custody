@@ -89,6 +89,7 @@ export default class FileLog extends Component {
       .on('line', (line) => {
         if (initialDataFlushed) {
           this.log.add(line);
+          if (this.props.onMessage) this.props.onMessage(line);
         } else {
           logs.push(line);
           if (logs.length > INITIAL_SCROLLBACK) logs.shift();
@@ -139,7 +140,8 @@ export default class FileLog extends Component {
 FileLog.propTypes = {
   logfile: PropTypes.string.isRequired,
   focused: PropTypes.bool,
-  layout: PropTypes.object
+  layout: PropTypes.object,
+  onMessage: PropTypes.func
 };
 
 FileLog.defaultProps = {
