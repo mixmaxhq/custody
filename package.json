@@ -1,6 +1,6 @@
 {
   "name": "@custody/cli",
-  "version": "0.8.2",
+  "version": "0.9.0",
   "description": "A developer-oriented frontend for Supervisor",
   "bin": {
     "custody-cli": "bin/custody-cli/index.js"
