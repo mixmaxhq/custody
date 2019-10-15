@@ -50,4 +50,14 @@ export default class Plugin {
 
     return commands;
   }
+
+  log(process, message) {
+    if (!this._schema.log) return;
+
+    try {
+      this._schema.log(process, message);
+    } catch (e) {
+      screen.debug(`Error informing plugin "${this._name}" of log message:`, e);
+    }
+  }
 }
