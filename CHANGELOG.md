@@ -1,5 +1,7 @@
 ## Release History
 
+* 0.10.0 feat: improve filtered search selection logic
+
 * 0.9.0 Add support for plugins that analyze process logs
 
 * 0.8.2 Fix logfile tailing under Node 10.16.0 (#84)
