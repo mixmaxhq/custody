@@ -92,6 +92,41 @@ export default class ProcessTable extends Component {
     return results;
   }
 
+  selectBestMatch() {
+    const processes = this.filteredProcesses();
+    if (this.state.search) {
+      const lcSearch = this.state.search.toLowerCase();
+      // First look for an exact match.
+      const exactMatchIndex = _.findIndex(processes, { name: lcSearch });
+      if (exactMatchIndex > -1) return void this.table.select(exactMatchIndex + 1);
+
+      // Then look for a prefix match.
+      const prefixMatch = processes.find((process) => process.displayName.startsWith(lcSearch));
+      if (prefixMatch) {
+        const prefixMatchIndex = _.findIndex(processes, { name: prefixMatch.displayName });
+        return void this.table.select(prefixMatchIndex + 1);
+      }
+
+      // Finally, look for a whole substring match.
+      const substringMatch = processes.find((process) => process.displayName.includes(lcSearch));
+      if (substringMatch) {
+        const substringMatchIndex = _.findIndex(processes, { name: substringMatch.displayName });
+        return void this.table.select(substringMatchIndex + 1);
+      }
+    }
+
+    if (this.selectedProcess) {
+      const processIndex = _.findIndex(processes, { name: this.selectedProcess.name });
+      if (processIndex > -1) {
+        return void this.table.select(processIndex + 1); // `selected` is 1-indexed since 0 is the headers.
+      }
+      this.selectedProcess = null;
+    }
+
+    // Fall back to selecting the first item.
+    return void this.table.select(1);
+  }
+
   // I don't think that react-blessed@0.2.1 supports `getSnapshotBeforeUpdate`, that wasn't being
   // called. Luckily I think that it doesn't use async rendering either so not strictly necessary to
   // use the new lifecycle method. react-blessed doesn't support `UNSAFE_componentWillUpdate` either
@@ -110,13 +145,7 @@ export default class ProcessTable extends Component {
   }
 
   componentDidUpdate() {
-    if (this.selectedProcess) {
-      const processIndex = _.findIndex(this.filteredProcesses(), { name: this.selectedProcess.name });
-      if (processIndex > -1) {
-        this.table.select(processIndex + 1); // `selected` is 1-indexed since 0 is the headers.
-      }
-      this.selectedProcess = null;
-    }
+    this.selectBestMatch();
   }
 
   onKeypress(ch, key) {
