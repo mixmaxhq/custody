@@ -34,7 +34,7 @@
     "lodash.xor": "^4.5.0",
     "memoize-one": "^4.0.2",
     "mkdirp": "^0.5.1",
-    "node-notifier": "^5.2.1",
+    "node-notifier": "^8.0.1",
     "npm-root": "^1.1.0",
     "opn": "^5.4.0",
     "promise-callbacks": "^3.1.0",
